@@ -7,6 +7,31 @@ export interface TiptapDocument {
   content: Record<string, unknown>[];
 }
 
+export type PostEmbedPlatform =
+  | "cloudinary"
+  | "youtube"
+  | "instagram"
+  | "x"
+  | "facebook"
+  | "tiktok";
+
+export type PostContentItem =
+  | { type: "richText"; content: TiptapDocument }
+  | { type: "image"; url: string; alt?: string }
+  | {
+      type: "heading2" | "heading3" | "quote" | "bullet" | "numbered";
+      text: string;
+    }
+  | { type: "link"; text: string; url: string }
+  | { type: "hr" }
+  | {
+      type: "embed";
+      platform: PostEmbedPlatform;
+      url: string;
+      embedId?: string;
+      title?: string;
+    };
+
 export interface PostSeo {
   metaTitle?: string;
   metaDescription?: string;
@@ -26,7 +51,7 @@ export interface PostDocument {
   slug: string;
   excerpt?: string;
   thumbnail?: string;
-  content?: TiptapDocument;
+  content?: PostContentItem[] | TiptapDocument;
   category?: Types.ObjectId;
   tags: string[];
   videos?: PostVideo[];

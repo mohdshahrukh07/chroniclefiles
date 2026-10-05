@@ -9,10 +9,19 @@ import Post, {
   type PostDocument,
   type PostVideo,
   type PostVideoType,
+  type PostContentItem,
 } from "@/models/post";
 import { connectToDatabase } from "@/lib/mongodb";
 import { getAdminSession } from "@/lib/admin-session";
 import { extractYouTubeVideoId } from "@/lib/youtube";
+import {
+  isPostContentItem,
+  isTiptapDocument,
+  normalizePostEmbeds,
+  normalizePostContent,
+  postContentHasData,
+  validatePostEmbeds,
+} from "@/lib/post-content";
 import {
   cloudinaryUploadTargets,
   isCloudinaryUploadFolder,
@@ -27,8 +36,8 @@ export interface CreatePostInput {
   category: string;
   tags: string[];
   status: "draft" | "published";
-  content: JSONContent;
-  videos: PostVideo[];
+  content: PostContentItem[] | JSONContent;
+  videos?: PostVideo[];
   seo?: {
     metaTitle?: string;
     metaDescription?: string;
@@ -92,22 +101,6 @@ function collectImageUrls(content: JSONContent): string[] {
       ? [content.attrs.src]
       : [];
   return [...urls, ...(content.content?.flatMap(collectImageUrls) ?? [])];
-}
-
-function hasContent(content: JSONContent): boolean {
-  if (typeof content.text === "string" && content.text.trim()) {
-    return true;
-  }
-
-  if (
-    content.type === "image" &&
-    typeof content.attrs?.src === "string" &&
-    content.attrs.src
-  ) {
-    return true;
-  }
-
-  return content.content?.some(hasContent) ?? false;
 }
 
 function isCloudinaryUrl(value: string, resourceType: "image" | "video") {
@@ -188,9 +181,12 @@ async function savePost(
     typeof input.category !== "string" ||
     !Array.isArray(input.tags) ||
     !input.tags.every((tag) => typeof tag === "string") ||
-    !isJsonContent(input.content) ||
-    !Array.isArray(input.videos) ||
-    !input.videos.every(isPostVideo) ||
+    !(
+      (Array.isArray(input.content) && input.content.every(isPostContentItem)) ||
+      isTiptapDocument(input.content) && isJsonContent(input.content)
+    ) ||
+    (input.videos !== undefined &&
+      (!Array.isArray(input.videos) || !input.videos.every(isPostVideo))) ||
     (input.seo !== undefined &&
       (!isRecord(input.seo) ||
         (input.seo.metaTitle !== undefined &&
@@ -202,9 +198,11 @@ async function savePost(
     return { success: false, message: "The post details are invalid." };
   }
 
-  let content: JSONContent;
+  let content: PostContentItem[];
   try {
-    content = JSON.parse(JSON.stringify(input.content)) as JSONContent;
+    content = JSON.parse(
+      JSON.stringify(normalizePostContent(input.content, input.videos ?? [])),
+    ) as PostContentItem[];
   } catch {
     return {
       success: false,
@@ -241,14 +239,14 @@ async function savePost(
   } else if (input.category && !Types.ObjectId.isValid(input.category)) {
     fieldErrors.category = "Select a valid category.";
   }
-  if (isPublishing && !hasContent(content)) {
+  if (isPublishing && !postContentHasData(content)) {
     fieldErrors.content = "Add some article text or an image.";
   }
-  if (!Array.isArray(input.videos)) {
-    fieldErrors.videos = "The video selection is invalid.";
-  } else {
+  const embedError = validatePostEmbeds(content);
+  if (embedError) fieldErrors.content = embedError;
+  if (input.videos) {
     const videoError = validateVideos(input.videos);
-    if (videoError) fieldErrors.videos = videoError;
+    if (videoError) fieldErrors.content = videoError;
   }
   if (input.status !== "draft" && input.status !== "published") {
     fieldErrors.status = "Select Draft or Published.";
@@ -266,6 +264,8 @@ async function savePost(
       fieldErrors,
     };
   }
+
+  content = normalizePostEmbeds(content);
 
   try {
     await connectToDatabase();
@@ -285,21 +285,38 @@ async function savePost(
       }
     }
 
-    const referencedMedia = [
-      ...(input.thumbnail
-        ? [{ url: input.thumbnail, resourceType: "image", field: "thumbnail" as const }]
-        : []),
-      ...collectImageUrls(content).map((url) => ({
-        url,
+    type MediaReference = {
+      url: string;
+      resourceType: "image" | "video";
+      field: "thumbnail" | "content";
+    };
+    const referencedMedia: MediaReference[] = [];
+    if (input.thumbnail) {
+      referencedMedia.push({
+        url: input.thumbnail,
         resourceType: "image",
-        field: "content" as const,
-      })),
-      ...input.videos.flatMap((video) =>
-        video.type === "cloudinary" && video.url
-          ? [{ url: video.url, resourceType: "video", field: "videos" as const }]
-          : [],
-      ),
-    ];
+        field: "thumbnail",
+      });
+    }
+    for (const item of content) {
+      if (item.type === "image") {
+        referencedMedia.push({
+          url: item.url,
+          resourceType: "image",
+          field: "content",
+        });
+      } else if (item.type === "richText") {
+        for (const url of collectImageUrls(item.content as JSONContent)) {
+          referencedMedia.push({ url, resourceType: "image", field: "content" });
+        }
+      } else if (item.type === "embed" && item.platform === "cloudinary") {
+        referencedMedia.push({
+          url: item.url,
+          resourceType: "video",
+          field: "content",
+        });
+      }
+    }
     if (referencedMedia.length) {
       const mediaRecords = await Media.find({
         url: { $in: referencedMedia.map((media) => media.url) },
@@ -340,10 +357,10 @@ async function savePost(
         : undefined,
       tags: input.tags.map((tag) => tag.trim()).filter(Boolean),
       status: input.status,
-      content: hasContent(content)
+      content: content.length
         ? (content as PostDocument["content"])
         : undefined,
-      videos: input.videos.length ? input.videos : undefined,
+      videos: undefined,
       seo: {
         metaTitle,
         metaDescription,

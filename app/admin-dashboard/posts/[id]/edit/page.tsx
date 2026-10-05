@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { Types } from "mongoose";
-import type { JSONContent } from "@tiptap/core";
 import { PostEditorForm } from "@/components/admin-posts/post-editor-form";
 import Category from "@/models/category";
 import Post from "@/models/post";
 import { connectToDatabase } from "@/lib/mongodb";
 import { getAdminSession } from "@/lib/admin-session";
+import { normalizePostContent } from "@/lib/post-content";
 
 export const metadata: Metadata = {
   title: "Edit Post | ChronicleFiles",
@@ -62,15 +62,9 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
         category: post.category?.toString() ?? "",
         tags: post.tags ?? [],
         status: post.status,
-        content: post.content
-          ? (JSON.parse(JSON.stringify(post.content)) as JSONContent)
-          : { type: "doc", content: [] },
-        videos: (post.videos ?? []).map((video) => ({
-          type: video.type,
-          url: video.url,
-          videoId: video.videoId,
-          title: video.title,
-        })),
+        content: normalizePostContent(post.content, post.videos ?? []),
+        legacyEmbedOrderUnknown:
+          !Array.isArray(post.content) && Boolean(post.videos?.length),
         seo: {
           metaTitle: post.seo?.metaTitle ?? "",
           metaDescription: post.seo?.metaDescription ?? "",

@@ -24,20 +24,17 @@ import {
   updatePostAction,
   type CreatePostInput,
 } from "@/app/admin-dashboard/posts/new/actions";
-import type { PostStatus, PostVideo } from "@/models/post";
+import type {
+  PostContentItem,
+  PostEmbedPlatform,
+  PostStatus,
+  TiptapDocument,
+} from "@/models/post";
+import { parsePostEmbed } from "@/lib/post-embeds";
 import {
-  toPostVideos,
-  VideoSection,
-  type EditorVideo,
-} from "@/components/admin-posts/video-section";
-import {
-  PostPreview,
-} from "@/components/admin-posts/post-preview";
-import {
-  orderPreviewBlocks,
-  type PreviewBlock,
-  type PreviewField,
-} from "@/components/admin-posts/post-preview-order";
+  postContentHasData,
+} from "@/lib/post-content";
+import { PostPreview } from "@/components/admin-posts/post-preview";
 
 interface CategoryOption {
   id: string;
@@ -57,8 +54,8 @@ interface PostEditorFormProps {
     category: string;
     tags: string[];
     status: PostStatus;
-    content: JSONContent;
-    videos: PostVideo[];
+    content: PostContentItem[];
+    legacyEmbedOrderUnknown?: boolean;
     seo: {
       metaTitle: string;
       metaDescription: string;
@@ -72,7 +69,6 @@ type FormField =
   | "excerpt"
   | "category"
   | "content"
-  | "videos"
   | "status"
   | "thumbnail";
 
@@ -85,7 +81,16 @@ type ContentBlock =
       text: string;
     }
   | { id: number; type: "link"; text: string; url: string }
-    | { id: number; type: "video"; videoId: number }
+  | {
+      id: number;
+      type: "embed";
+      platform: PostEmbedPlatform | "";
+      url: string;
+      embedId?: string;
+      title?: string;
+      isUploading: boolean;
+      error?: string;
+    }
     | { id: number; type: "hr" };
 
 type NewContentBlockType = ContentBlock["type"];
@@ -103,109 +108,60 @@ function toSlug(value: string) {
     .replace(/^-|-$/g, "");
 }
 
-function contentHasData(content: JSONContent): boolean {
-  if (typeof content.text === "string" && content.text.trim()) return true;
-  if (content.type === "image" && typeof content.attrs?.src === "string") {
-    return Boolean(content.attrs.src);
-  }
-  return content.content?.some(contentHasData) ?? false;
+function initialContentBlocks(content: PostContentItem[] = []): ContentBlock[] {
+  return content.map((item, index) => {
+    const id = index + 1;
+    if (item.type === "richText") {
+      return {
+        id,
+        type: "rich-text",
+        content: item.content as JSONContent,
+      };
+    }
+    if (item.type === "image") {
+      return { id, type: "image", url: item.url, alt: item.alt ?? "" };
+    }
+    if (item.type === "embed") {
+      return {
+        ...item,
+        id,
+        isUploading: false,
+      };
+    }
+    return { ...item, id };
+  });
 }
 
-function contentBlocksToDocument(blocks: ContentBlock[]): JSONContent {
-  const content: JSONContent[] = [];
-
-  for (const block of blocks) {
+function contentBlocksToPostContent(blocks: ContentBlock[]): PostContentItem[] {
+  return blocks.flatMap((block): PostContentItem[] => {
     if (block.type === "rich-text") {
-      content.push(...(block.content.content ?? []));
-      continue;
+      return [{
+        type: "richText",
+        content: JSON.parse(JSON.stringify(block.content)) as TiptapDocument,
+      }];
     }
     if (block.type === "image") {
-      if (block.url) {
-        content.push({
-          type: "image",
-          attrs: { src: block.url, alt: block.alt || "" },
-        });
-      }
-      continue;
+      return block.url.trim()
+        ? [{ type: "image", url: block.url.trim(), ...(block.alt ? { alt: block.alt } : {}) }]
+        : [];
     }
-    if (block.type === "heading2" || block.type === "heading3") {
-      if (block.text.trim()) {
-        content.push({
-          type: "heading",
-          attrs: { level: block.type === "heading2" ? 2 : 3 },
-          content: [{ type: "text", text: block.text }],
-        });
-      }
-      continue;
+    if (block.type === "embed") {
+      if (!block.platform) return [];
+      const parsed = parsePostEmbed(block.platform, block.url);
+      return parsed
+        ? [{ type: "embed", ...parsed, ...(block.title ? { title: block.title } : {}) }]
+        : [];
     }
-    if (block.type === "quote") {
-      const paragraphs = block.text
-        .split(/\r?\n/)
-        .filter((line) => line.trim())
-        .map((line) => ({
-          type: "paragraph",
-          content: [{ type: "text", text: line }],
-        }));
-      if (paragraphs.length) {
-        content.push({ type: "blockquote", content: paragraphs });
-      }
-      continue;
-    }
-    if (block.type === "bullet" || block.type === "numbered") {
-      const items = block.text
-        .split(/\r?\n/)
-        .map((line) => line.trim())
-        .filter(Boolean)
-        .map((line) => ({
-          type: "listItem",
-          content: [
-            { type: "paragraph", content: [{ type: "text", text: line }] },
-          ],
-        }));
-      if (items.length) {
-        content.push({
-          type: block.type === "bullet" ? "bulletList" : "orderedList",
-          content: items,
-        });
-      }
-      continue;
-    }
+    if (block.type === "hr") return [{ type: "hr" }];
     if (block.type === "link") {
-      if (block.text.trim() && block.url.trim()) {
-        content.push({
-          type: "paragraph",
-          content: [
-            {
-              type: "text",
-              text: block.text,
-              marks: [{ type: "link", attrs: { href: block.url.trim() } }],
-            },
-          ],
-        });
-      }
-      continue;
+      return block.text.trim() && block.url.trim()
+        ? [{ type: "link", text: block.text.trim(), url: block.url.trim() }]
+        : [];
     }
-    if (block.type === "video") continue;
-    content.push({ type: "horizontalRule" });
-  }
-
-  return JSON.parse(
-    JSON.stringify({ type: "doc", content }),
-  ) as JSONContent;
-}
-
-function initialContentBlocks(
-  content?: JSONContent,
-  videoCount = 0,
-): ContentBlock[] {
-  const blocks: ContentBlock[] = [];
-  if (content?.content?.length) {
-    blocks.push({ id: 1, type: "rich-text", content });
-  }
-  for (let index = 0; index < videoCount; index += 1) {
-    blocks.push({ id: blocks.length + 1, type: "video", videoId: index + 1 });
-  }
-  return blocks;
+    return block.text.trim()
+      ? [{ type: block.type, text: block.text.trim() }]
+      : [];
+  });
 }
 
 function isSafeLink(value: string): boolean {
@@ -244,52 +200,19 @@ export function PostEditorForm({
     initialPost?.seo.metaDescription ?? "",
   );
   const [contentBlocks, setContentBlocks] = useState<ContentBlock[]>(() =>
-    initialContentBlocks(initialPost?.content, initialPost?.videos.length),
+    initialContentBlocks(initialPost?.content),
   );
   const [nextContentBlockId, setNextContentBlockId] = useState(
-    () =>
-      initialContentBlocks(
-        initialPost?.content,
-        initialPost?.videos.length,
-      ).length + 1,
+    () => initialContentBlocks(initialPost?.content).length + 1,
   );
   const [isContentMenuOpen, setIsContentMenuOpen] = useState(false);
-  const [videos, setVideos] = useState<EditorVideo[]>(
-    initialPost?.videos.map((video, index) => ({
-      id: index + 1,
-      type: video.type,
-      youtubeUrl:
-        video.type === "youtube" && video.videoId
-          ? `https://www.youtube.com/watch?v=${video.videoId}`
-          : "",
-      url: video.url,
-      videoId: video.videoId,
-      title: video.title,
-      isUploading: false,
-    })) ?? [],
-  );
-  const [nextVideoId, setNextVideoId] = useState(
-    () => (initialPost?.videos.length ?? 0) + 1,
-  );
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<FormField, string>>>({});
   const [formMessage, setFormMessage] = useState("");
   const [saveSucceeded, setSaveSucceeded] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [savingStatus, setSavingStatus] = useState<"draft" | "published" | null>(null);
-  const previewFields: PreviewField[] = contentBlocks.map((block) =>
-    block.type === "video"
-      ? { id: block.id, type: block.type, videoId: block.videoId }
-      : {
-          id: block.id,
-          type: block.type,
-          content: contentBlocksToDocument([block]),
-        },
-  );
-  const previewBlocks: PreviewBlock[] = orderPreviewBlocks(
-    previewFields,
-    videos,
-  );
+  const previewContent = contentBlocksToPostContent(contentBlocks);
 
   function clearFieldError(field: FormField) {
     setFieldErrors((errors) => ({ ...errors, [field]: undefined }));
@@ -313,32 +236,26 @@ export function PostEditorForm({
     setFormMessage("");
     setSaveSucceeded(false);
 
-    if (type === "video") {
-      if (videos.length >= 2) {
+    if (type === "embed") {
+      if (contentBlocks.filter((block) => block.type === "embed").length >= 2) {
         setFieldErrors((errors) => ({
           ...errors,
-          videos: "A post can have no more than 2 videos.",
+          content: "A post can have no more than 2 embed fields.",
         }));
         return;
       }
-      const videoId = nextVideoId;
       const id = nextContentBlockId;
-      setVideos((current) => [
-        ...current,
+      setContentBlocks((blocks) => [
+        ...blocks,
         {
-          id: videoId,
-          type: "",
-          youtubeUrl: "",
+          id,
+          type: "embed",
+          platform: "",
+          url: "",
           isUploading: false,
         },
       ]);
-      setNextVideoId((id) => id + 1);
-      setContentBlocks((blocks) => [
-        ...blocks,
-        { id, type: "video", videoId },
-      ]);
       setNextContentBlockId((current) => current + 1);
-      clearFieldError("videos");
       return;
     }
 
@@ -358,10 +275,7 @@ export function PostEditorForm({
     setNextContentBlockId((current) => current + 1);
   }
 
-  function validateBeforeSave(
-    nextStatus: "draft" | "published",
-    document: JSONContent,
-  ): boolean {
+  function validateBeforeSave(nextStatus: "draft" | "published"): boolean {
     const nextErrors: Partial<Record<FormField, string>> = {};
     if (!title.trim()) nextErrors.title = "Enter a post title.";
     if (!slug.trim()) {
@@ -374,7 +288,7 @@ export function PostEditorForm({
         nextErrors.excerpt = "Enter a short excerpt before publishing.";
       }
       if (!category) nextErrors.category = "Select a category.";
-      if (!contentHasData(document)) {
+      if (!postContentHasData(contentBlocksToPostContent(contentBlocks))) {
         nextErrors.content = "Add some article text or an image.";
       }
       if (
@@ -394,14 +308,21 @@ export function PostEditorForm({
       nextErrors.content = "Wait for article image uploads to finish before saving.";
     }
 
-    const pendingVideo = videos.find((video) => {
-      if (video.type === "cloudinary") return !video.url || video.isUploading;
-      if (video.type === "youtube") return !video.videoId || Boolean(video.error);
-      return true;
-    });
-    if (pendingVideo) {
-      nextErrors.videos =
-        "Choose a video type and finish its upload or enter a valid YouTube URL.";
+    const embedCount = contentBlocks.filter((block) => block.type === "embed").length;
+    if (embedCount > 2) {
+      nextErrors.content = "A post can have no more than 2 embed fields.";
+    } else if (
+      contentBlocks.some(
+        (block) =>
+          block.type === "embed" &&
+          (!block.platform ||
+            !block.url.trim() ||
+            block.isUploading ||
+            !parsePostEmbed(block.platform, block.url)),
+      )
+    ) {
+      nextErrors.content =
+        "Choose a supported embed type and enter a valid URL or finish the Cloudinary upload.";
     }
 
     setFieldErrors(nextErrors);
@@ -413,8 +334,8 @@ export function PostEditorForm({
 
   function savePost(nextStatus: "draft" | "published") {
     if (savingStatus || isPending) return;
-    const document = contentBlocksToDocument(contentBlocks);
-    if (!validateBeforeSave(nextStatus, document)) return;
+    const content = contentBlocksToPostContent(contentBlocks);
+    if (!validateBeforeSave(nextStatus)) return;
 
     const input: CreatePostInput = {
       title,
@@ -424,8 +345,7 @@ export function PostEditorForm({
       category,
       tags: tags.split(",").map((tag) => tag.trim()).filter(Boolean),
       status: nextStatus,
-      content: document,
-      videos: toPostVideos(videos),
+      content,
       seo: { metaTitle, metaDescription },
     };
 
@@ -745,7 +665,7 @@ export function PostEditorForm({
                         {[
                           ["rich-text", "Rich Text Editor"],
                           ["image", "Image"],
-                          ["video", "Video"],
+                          ["embed", "Embed"],
                           ["heading2", "H2"],
                           ["heading3", "H3"],
                           ["bullet", "Bullet List"],
@@ -758,7 +678,11 @@ export function PostEditorForm({
                             key={type}
                             type="button"
                             role="menuitem"
-                            disabled={type === "video" && videos.length >= 2}
+                            disabled={
+                              type === "embed" &&
+                              contentBlocks.filter((block) => block.type === "embed")
+                                .length >= 2
+                            }
                             onClick={() =>
                               addContentBlock(type as NewContentBlockType)
                             }
@@ -772,7 +696,19 @@ export function PostEditorForm({
                   </div>
                 </div>
 
-                {contentBlocks.length === 0 && videos.length === 0 && (
+                {initialPost?.legacyEmbedOrderUnknown && (
+                  <p
+                    role="status"
+                    className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900"
+                  >
+                    This older post stored embeds separately, so their original
+                    positions were not recorded. They are shown after the saved
+                    article content as a migration fallback, not as a recovered
+                    original order.
+                  </p>
+                )}
+
+                {contentBlocks.length === 0 && (
                   <p className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm text-slate-500">
                     No content fields yet. Select an item from Add Content to begin.
                   </p>
@@ -801,8 +737,8 @@ export function PostEditorForm({
                                       ? "Numbered List"
                                       : block.type === "hr"
                                         ? "Horizontal Rule"
-                                        : block.type === "video"
-                                          ? "Video"
+                                        : block.type === "embed"
+                                          ? "Embed"
                                           : block.type === "link"
                                             ? "Link"
                                             : "Quote"}
@@ -813,21 +749,12 @@ export function PostEditorForm({
                             setContentBlocks((blocks) =>
                               blocks.filter((item) => item.id !== block.id),
                             );
-                            if (block.type === "video") {
-                              setVideos((current) =>
-                                current.filter(
-                                  (video) => video.id !== block.videoId,
-                                ),
-                              );
-                            }
                             setUploadingContentImages((current) => {
                               const next = new Set(current);
                               next.delete(block.id);
                               return next;
                             });
-                            clearFieldError(
-                              block.type === "video" ? "videos" : "content",
-                            );
+                            clearFieldError("content");
                           }}
                           className="inline-flex min-h-11 items-center gap-2 rounded-lg px-3 text-xs font-semibold text-red-600 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                           aria-label={`Remove content field ${index + 1}`}
@@ -1015,36 +942,131 @@ export function PostEditorForm({
                         </div>
                       )}
 
-                      {block.type === "video" && (
-                        <VideoSection
-                          videos={videos.filter(
-                            (video) => video.id === block.videoId,
-                          )}
-                          onChange={(nextVideos) => {
-                            if (nextVideos.length === 0) {
-                              setVideos((current) =>
-                                current.filter(
-                                  (video) => video.id !== block.videoId,
-                                ),
-                              );
-                              setContentBlocks((blocks) =>
-                                blocks.filter((item) => item.id !== block.id),
-                              );
-                            } else {
-                              const [updatedVideo] = nextVideos;
-                              setVideos((current) =>
-                                current.map((video) =>
-                                  video.id === block.videoId
-                                    ? updatedVideo
-                                    : video,
-                                ),
-                              );
-                            }
-                            clearFieldError("videos");
-                          }}
-                          fieldError={fieldErrors.videos}
-                          allowAdd={false}
-                        />
+                      {block.type === "embed" && (
+                        <div className="space-y-3">
+                          <div>
+                            <label
+                              htmlFor={`content-embed-platform-${block.id}`}
+                              className={labelClassName}
+                            >
+                              Embed Type
+                            </label>
+                            <select
+                              id={`content-embed-platform-${block.id}`}
+                              value={block.platform}
+                              onChange={(event) =>
+                                updateContentBlock(block.id, (current) =>
+                                  current.type === "embed"
+                                    ? {
+                                        ...current,
+                                        platform: event.target.value as
+                                          | PostEmbedPlatform
+                                          | "",
+                                        url: "",
+                                        embedId: undefined,
+                                        error: undefined,
+                                      }
+                                    : current,
+                                )
+                              }
+                              className={fieldClassName}
+                            >
+                              <option value="">Select platform</option>
+                              <option value="cloudinary">Cloudinary Video</option>
+                              <option value="youtube">YouTube</option>
+                              <option value="instagram">Instagram</option>
+                              <option value="x">X / Twitter</option>
+                              <option value="facebook">Facebook</option>
+                              <option value="tiktok">TikTok</option>
+                            </select>
+                          </div>
+
+                          {block.platform === "cloudinary" ? (
+                            <div className="rounded-lg border border-dashed border-slate-300 bg-white p-4">
+                              <CloudinaryUploadButton
+                                target="postVideo"
+                                disabled={block.isUploading}
+                                onUploadingChange={(isUploading) =>
+                                  updateContentBlock(block.id, (current) =>
+                                    current.type === "embed"
+                                      ? { ...current, isUploading }
+                                      : current,
+                                  )
+                                }
+                                onUploaded={(url) => {
+                                  const parsed = parsePostEmbed("cloudinary", url);
+                                  updateContentBlock(block.id, (current) =>
+                                    current.type === "embed"
+                                      ? {
+                                          ...current,
+                                          url,
+                                          embedId: parsed?.embedId,
+                                          error: parsed
+                                            ? undefined
+                                            : "The Cloudinary video URL is not valid.",
+                                        }
+                                      : current,
+                                  );
+                                }}
+                                className="min-h-11 rounded-lg bg-[#e8f2f4] px-4 text-sm font-medium text-[#02a95c] hover:bg-green-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#02a95c] disabled:opacity-50"
+                              >
+                                {block.url ? "Replace video" : "Upload video"}
+                              </CloudinaryUploadButton>
+                              {block.url && (
+                                <video
+                                  controls
+                                  preload="metadata"
+                                  src={block.url}
+                                  className="mt-3 aspect-video w-full rounded-lg bg-black"
+                                />
+                              )}
+                              <p className="mt-2 text-xs text-slate-500">
+                                Upload a Cloudinary video, or choose another supported platform.
+                              </p>
+                            </div>
+                          ) : block.platform ? (
+                            <div>
+                              <label
+                                htmlFor={`content-embed-url-${block.id}`}
+                                className={labelClassName}
+                              >
+                                {block.platform === "x"
+                                  ? "Post URL"
+                                  : `${block.platform[0].toUpperCase()}${block.platform.slice(1)} URL`}
+                              </label>
+                              <input
+                                id={`content-embed-url-${block.id}`}
+                                type="url"
+                                value={block.url}
+                                onChange={(event) => {
+                                  const url = event.target.value;
+                                  const parsed = parsePostEmbed(block.platform as PostEmbedPlatform, url);
+                                  updateContentBlock(block.id, (current) =>
+                                    current.type === "embed"
+                                      ? {
+                                          ...current,
+                                          url,
+                                          embedId: parsed?.embedId,
+                                          error:
+                                            url && !parsed
+                                              ? `Enter a valid ${current.platform} URL.`
+                                              : undefined,
+                                        }
+                                      : current,
+                                  );
+                                }}
+                                placeholder={
+                                  block.platform === "youtube"
+                                    ? "https://www.youtube.com/watch?v=..."
+                                    : `https://${block.platform}.com/...`
+                                }
+                                aria-invalid={Boolean(block.error)}
+                                className={fieldClassName}
+                              />
+                            </div>
+                          ) : null}
+                          {block.error && <FieldError>{block.error}</FieldError>}
+                        </div>
                       )}
                     </article>
                   ))}
@@ -1183,7 +1205,7 @@ export function PostEditorForm({
         title={title}
         excerpt={excerpt}
         thumbnail={thumbnail}
-        blocks={previewBlocks}
+        blocks={previewContent}
       />
     </div>
   );
