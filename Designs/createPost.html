@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ChronicleFiles — Create Post</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: "#02a95c",
+            muted: "#608a89",
+            pale: "#e8f2f4",
+            ink: "#444444"
+          }
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="min-h-screen bg-slate-50 text-ink">
+  <div class="min-h-screen lg:flex">
+
+    <!-- Sidebar -->
+    <aside id="sidebar"
+      class="fixed inset-y-0 left-0 z-40 w-64 -translate-x-full border-r border-slate-200 bg-white transition-transform lg:static lg:translate-x-0">
+      <div class="flex h-full flex-col">
+        <div class="flex h-20 items-center border-b border-slate-200 px-6">
+          <div>
+            <div class="text-xl font-bold text-brand">ChronicleFiles</div>
+            <div class="text-xs text-slate-500">Admin Panel</div>
+          </div>
+          <button onclick="toggleSidebar()" class="ml-auto rounded-lg p-2 text-slate-500 hover:bg-slate-100 lg:hidden" aria-label="Close menu">✕</button>
+        </div>
+
+        <nav class="flex-1 space-y-1 p-4">
+          <a href="#" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm text-slate-600 hover:bg-pale">⌂ <span>Dashboard</span></a>
+          <a href="#" class="flex items-center gap-3 rounded-xl bg-green-50 px-4 py-3 text-sm font-semibold text-brand">▣ <span>Posts</span></a>
+          <a href="#" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm text-slate-600 hover:bg-pale">◫ <span>Categories</span></a>
+          <a href="#" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm text-slate-600 hover:bg-pale">▧ <span>Media</span></a>
+          <a href="#" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm text-slate-600 hover:bg-pale">♙ <span>Users</span></a>
+          <a href="#" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm text-slate-600 hover:bg-pale">⚙ <span>Settings</span></a>
+        </nav>
+
+        <div class="border-t border-slate-200 p-4">
+          <div class="flex items-center gap-3 rounded-xl bg-slate-50 p-3">
+            <div class="grid h-10 w-10 place-items-center rounded-full bg-brand font-bold text-white">A</div>
+            <div class="min-w-0">
+              <div class="truncate text-sm font-semibold">Admin</div>
+              <div class="truncate text-xs text-slate-500">Administrator</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <div id="overlay" onclick="toggleSidebar()" class="fixed inset-0 z-30 hidden bg-black/30 lg:hidden"></div>
+
+    <!-- Main -->
+    <main class="min-w-0 flex-1">
+      <!-- Header -->
+      <header class="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur">
+        <div class="flex h-20 items-center justify-between px-4 sm:px-6 lg:px-8">
+          <div class="flex items-center gap-3">
+            <button onclick="toggleSidebar()" class="rounded-lg p-2 text-slate-600 hover:bg-slate-100 lg:hidden" aria-label="Open menu">☰</button>
+            <div>
+              <h1 class="text-xl font-bold sm:text-2xl">Create Post</h1>
+              <p class="text-xs text-slate-500 sm:text-sm">Create, preview and publish an article.</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="openPreview()" class="hidden rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 sm:block">
+              Preview
+            </button>
+            <button onclick="saveDraft()" class="rounded-xl border border-brand px-4 py-2.5 text-sm font-semibold text-brand hover:bg-green-50">
+              Save Draft
+            </button>
+            <button onclick="publishPost()" class="rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:opacity-90">
+              Publish
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div class="mx-auto max-w-7xl p-4 sm:p-6 lg:p-8">
+        <div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+
+          <!-- Editor column -->
+          <section class="space-y-6">
+
+            <!-- Basic information -->
+            <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+              <div class="mb-5">
+                <h2 class="text-lg font-bold">Basic Information</h2>
+                <p class="mt-1 text-sm text-slate-500">Add the main information for your article.</p>
+              </div>
+
+              <div class="space-y-5">
+                <div>
+                  <label class="mb-2 block text-sm font-semibold">Title <span class="text-red-500">*</span></label>
+                  <input id="title" type="text" placeholder="Enter article title..."
+                    class="w-full rounded-xl border border-slate-300 px-4 py-3 text-base outline-none transition focus:border-brand focus:ring-2 focus:ring-green-100" />
+                </div>
+
+                <div>
+                  <label class="mb-2 block text-sm font-semibold">Slug <span class="text-red-500">*</span></label>
+                  <input id="slug" type="text" placeholder="article-url-slug"
+                    class="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand focus:ring-2 focus:ring-green-100" />
+                  <p class="mt-1 text-xs text-slate-500">Example: /technology/future-of-ai</p>
+                </div>
+
+                <div>
+                  <label class="mb-2 block text-sm font-semibold">Excerpt <span class="text-red-500">*</span></label>
+                  <textarea id="excerpt" rows="3" placeholder="Short summary of the article..."
+                    class="w-full resize-y rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-brand focus:ring-2 focus:ring-green-100"></textarea>
+                </div>
+
+                <div>
+                  <label class="mb-2 block text-sm font-semibold">Thumbnail</label>
+                  <div class="rounded-xl border-2 border-dashed border-slate-300 p-5 text-center hover:border-brand">
+                    <input id="thumbnail" type="file" accept="image/*" class="mx-auto block w-full max-w-sm text-sm" />
+                    <p class="mt-2 text-xs text-slate-500">Optional. Upload image will later use Cloudinary.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Dynamic content editor -->
+            <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+              <div class="mb-5 flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <h2 class="text-lg font-bold">Article Content</h2>
+                  <p class="mt-1 text-sm text-slate-500">Add content blocks using the dropdown.</p>
+                </div>
+
+                <div class="relative">
+                  <button onclick="toggleContentMenu()" class="flex items-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90">
+                    + Add Content <span>▾</span>
+                  </button>
+                  <div id="contentMenu" class="absolute right-0 top-12 z-10 hidden w-64 overflow-hidden rounded-xl border border-slate-200 bg-white p-1 shadow-xl">
+                    <button onclick="addBlock('paragraph')" class="block w-full rounded-lg px-3 py-2.5 text-left text-sm hover:bg-slate-50">¶ Paragraph</button>
+                    <button onclick="addBlock('heading2')" class="block w-full rounded-lg px-3 py-2.5 text-left text-sm hover:bg-slate-50">H2 Heading</button>
+                    <button onclick="addBlock('heading3')" class="block w-full rounded-lg px-3 py-2.5 text-left text-sm hover:bg-slate-50">H3 Heading</button>
+                    <button onclick="addBlock('bullet')" class="block w-full rounded-lg px-3 py-2.5 text-left text-sm hover:bg-slate-50">• Bullet List</button>
+                    <button onclick="addBlock('numbered')" class="block w-full rounded-lg px-3 py-2.5 text-left text-sm hover:bg-slate-50">1. Numbered List</button>
+                    <button onclick="addBlock('quote')" class="block w-full rounded-lg px-3 py-2.5 text-left text-sm hover:bg-slate-50">❝ Quote</button>
+                    <button onclick="addBlock('image')" class="block w-full rounded-lg px-3 py-2.5 text-left text-sm hover:bg-slate-50">▧ Image</button>
+                    <button onclick="addBlock('link')" class="block w-full rounded-lg px-3 py-2.5 text-left text-sm hover:bg-slate-50">↗ Link</button>
+                    <button onclick="addBlock('hr')" class="block w-full rounded-lg px-3 py-2.5 text-left text-sm hover:bg-slate-50">― Horizontal Rule</button>
+                  </div>
+                </div>
+              </div>
+
+              <div id="contentBlocks" class="space-y-4"></div>
+
+              <div id="emptyContent" class="rounded-xl border border-dashed border-slate-300 p-10 text-center">
+                <div class="mx-auto grid h-12 w-12 place-items-center rounded-full bg-green-50 text-xl text-brand">+</div>
+                <p class="mt-3 font-semibold">Start writing your article</p>
+                <p class="mt-1 text-sm text-slate-500">Use “Add Content” to insert paragraphs, headings, images and more.</p>
+              </div>
+            </div>
+
+            <!-- Optional videos -->
+            <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+              <div class="mb-5 flex items-start justify-between gap-3">
+                <div>
+                  <h2 class="text-lg font-bold">Videos <span class="font-normal text-slate-400">(Optional)</span></h2>
+                  <p class="mt-1 text-sm text-slate-500">Add up to 2 videos. Choose Cloudinary upload or YouTube.</p>
+                </div>
+                <span id="videoCount" class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">0 / 2</span>
+              </div>
+
+              <div id="videosContainer" class="space-y-4"></div>
+
+              <button id="addVideoButton" onclick="addVideo()" class="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 px-4 py-3 text-sm font-semibold text-slate-600 hover:border-brand hover:text-brand">
+                + Add Video
+              </button>
+            </div>
+
+          </section>
+
+          <!-- Settings column -->
+          <aside class="space-y-6">
+            <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <h2 class="font-bold">Publishing</h2>
+              <div class="mt-5 space-y-4">
+                <div>
+                  <label class="mb-2 block text-sm font-semibold">Status</label>
+                  <select class="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 outline-none focus:border-brand focus:ring-2 focus:ring-green-100">
+                    <option>Draft</option>
+                    <option>Published</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="mb-2 block text-sm font-semibold">Category <span class="text-red-500">*</span></label>
+                  <select class="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 outline-none focus:border-brand focus:ring-2 focus:ring-green-100">
+                    <option>Select category</option>
+                    <option>News</option>
+                    <option>Technology</option>
+                    <option>Education</option>
+                    <option>Entertainment</option>
+                    <option>Lifestyle</option>
+                    <option>Business</option>
+                    <option>Science</option>
+                    <option>Health</option>
+                    <option>Sports</option>
+                    <option>Travel</option>
+                    <option>Finance</option>
+                    <option>Gaming</option>
+                    <option>Reviews</option>
+                    <option>How-To</option>
+                    <option>Opinion</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="mb-2 block text-sm font-semibold">Tags</label>
+                  <input type="text" placeholder="AI, technology, future"
+                    class="w-full rounded-xl border border-slate-300 px-3 py-3 outline-none focus:border-brand focus:ring-2 focus:ring-green-100" />
+                  <p class="mt-1 text-xs text-slate-500">Separate tags with commas.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <h2 class="font-bold">SEO</h2>
+              <div class="mt-5 space-y-4">
+                <div>
+                  <label class="mb-2 block text-sm font-semibold">Meta Title</label>
+                  <input type="text" placeholder="Optional SEO title"
+                    class="w-full rounded-xl border border-slate-300 px-3 py-3 outline-none focus:border-brand focus:ring-2 focus:ring-green-100" />
+                </div>
+                <div>
+                  <label class="mb-2 block text-sm font-semibold">Meta Description</label>
+                  <textarea rows="4" placeholder="Optional SEO description..."
+                    class="w-full resize-y rounded-xl border border-slate-300 px-3 py-3 outline-none focus:border-brand focus:ring-2 focus:ring-green-100"></textarea>
+                </div>
+              </div>
+            </div>
+
+            <div class="rounded-2xl border border-green-100 bg-green-50 p-5">
+              <h3 class="font-semibold text-green-900">Before publishing</h3>
+              <ul class="mt-3 space-y-2 text-sm text-green-800">
+                <li>✓ Add a clear article title</li>
+                <li>✓ Select a category</li>
+                <li>✓ Check article content</li>
+                <li>✓ Preview the article</li>
+                <li>✓ Videos are optional</li>
+              </ul>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Preview Modal -->
+  <div id="previewModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/50 p-4 sm:p-8">
+    <div class="mx-auto min-h-full max-w-4xl">
+      <div class="overflow-hidden rounded-2xl bg-white shadow-2xl">
+        <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+          <div>
+            <div class="text-xs font-semibold uppercase tracking-wider text-brand">Article Preview</div>
+            <div class="text-sm text-slate-500">Preview before publishing</div>
+          </div>
+          <button onclick="closePreview()" class="rounded-lg p-2 text-slate-500 hover:bg-slate-100">✕</button>
+        </div>
+        <article id="previewArticle" class="p-6 sm:p-10"></article>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let blockId = 0;
+    let videoId = 0;
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('-translate-x-full');
+      document.getElementById('overlay').classList.toggle('hidden');
+    }
+
+    function toggleContentMenu() {
+      document.getElementById('contentMenu').classList.toggle('hidden');
+    }
+
+    document.addEventListener('click', (e) => {
+      const menu = document.getElementById('contentMenu');
+      const button = e.target.closest('button');
+      if (!e.target.closest('#contentMenu') && !button?.textContent.includes('Add Content')) {
+        menu.classList.add('hidden');
+      }
+    });
+
+    function addBlock(type) {
+      blockId++;
+      const container = document.getElementById('contentBlocks');
+      document.getElementById('emptyContent').classList.add('hidden');
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'group rounded-xl border border-slate-200 bg-slate-50 p-4';
+      wrapper.dataset.type = type;
+      wrapper.dataset.id = blockId;
+
+      let inner = '';
+
+      if (type === 'paragraph') {
+        inner = `<textarea rows="4" placeholder="Write paragraph..." class="content-input w-full resize-y rounded-lg border border-slate-300 bg-white p-3 outline-none focus:border-brand focus:ring-2 focus:ring-green-100"></textarea>`;
+      } else if (type === 'heading2') {
+        inner = `<input placeholder="H2 heading..." class="content-input w-full rounded-lg border border-slate-300 bg-white p-3 text-lg font-semibold outline-none focus:border-brand focus:ring-2 focus:ring-green-100" />`;
+      } else if (type === 'heading3') {
+        inner = `<input placeholder="H3 heading..." class="content-input w-full rounded-lg border border-slate-300 bg-white p-3 font-semibold outline-none focus:border-brand focus:ring-2 focus:ring-green-100" />`;
+      } else if (type === 'bullet' || type === 'numbered') {
+        inner = `<textarea rows="4" placeholder="Enter one list item per line..." class="content-input w-full resize-y rounded-lg border border-slate-300 bg-white p-3 outline-none focus:border-brand focus:ring-2 focus:ring-green-100"></textarea>`;
+      } else if (type === 'quote') {
+        inner = `<textarea rows="3" placeholder="Write quote..." class="content-input w-full resize-y rounded-lg border border-slate-300 bg-white p-3 italic outline-none focus:border-brand focus:ring-2 focus:ring-green-100"></textarea>`;
+      } else if (type === 'image') {
+        inner = `
+          <div class="grid gap-3 sm:grid-cols-[1fr_1fr]">
+            <input type="file" accept="image/*" class="content-file w-full rounded-lg border border-slate-300 bg-white p-2 text-sm" />
+            <input placeholder="Image alt text..." class="content-alt w-full rounded-lg border border-slate-300 bg-white p-3 outline-none focus:border-brand focus:ring-2 focus:ring-green-100" />
+          </div>
+          <p class="mt-2 text-xs text-slate-500">Future implementation: upload to Cloudinary and store the URL in Tiptap content.</p>`;
+      } else if (type === 'link') {
+        inner = `
+          <div class="grid gap-3 sm:grid-cols-2">
+            <input placeholder="Link text..." class="content-link-text rounded-lg border border-slate-300 bg-white p-3 outline-none focus:border-brand focus:ring-2 focus:ring-green-100" />
+            <input placeholder="https://example.com" class="content-link-url rounded-lg border border-slate-300 bg-white p-3 outline-none focus:border-brand focus:ring-2 focus:ring-green-100" />
+          </div>`;
+      } else if (type === 'hr') {
+        inner = `<div class="py-3"><hr class="border-slate-300" /><p class="mt-2 text-xs text-slate-500">Horizontal rule</p></div>`;
+      }
+
+      wrapper.innerHTML = `
+        <div class="mb-3 flex items-center justify-between">
+          <span class="text-xs font-bold uppercase tracking-wide text-muted">${labelForType(type)}</span>
+          <button onclick="removeBlock(${blockId})" class="rounded-lg px-2 py-1 text-xs font-semibold text-red-500 hover:bg-red-50">Remove</button>
+        </div>
+        ${inner}
+      `;
+
+      container.appendChild(wrapper);
+      document.getElementById('contentMenu').classList.add('hidden');
+    }
+
+    function labelForType(type) {
+      const labels = {
+        paragraph: 'Paragraph',
+        heading2: 'H2 Heading',
+        heading3: 'H3 Heading',
+        bullet: 'Bullet List',
+        numbered: 'Numbered List',
+        quote: 'Quote',
+        image: 'Image',
+        link: 'Link',
+        hr: 'Horizontal Rule'
+      };
+      return labels[type] || 'Content';
+    }
+
+    function removeBlock(id) {
+      const block = document.querySelector(`[data-id="${id}"]`);
+      if (block) block.remove();
+
+      if (!document.querySelector('#contentBlocks > div')) {
+        document.getElementById('emptyContent').classList.remove('hidden');
+      }
+    }
+
+    function addVideo() {
+      const container = document.getElementById('videosContainer');
+      const count = container.children.length;
+
+      if (count >= 2) return;
+
+      videoId++;
+      const card = document.createElement('div');
+      card.className = 'rounded-xl border border-slate-200 bg-slate-50 p-4';
+      card.dataset.videoId = videoId;
+
+      card.innerHTML = `
+        <div class="mb-3 flex items-center justify-between">
+          <span class="text-sm font-bold">Video ${count + 1}</span>
+          <button onclick="removeVideo(${videoId})" class="rounded-lg px-2 py-1 text-xs font-semibold text-red-500 hover:bg-red-50">Remove</button>
+        </div>
+
+        <select onchange="changeVideoType(${videoId}, this.value)" id="videoType-${videoId}"
+          class="mb-3 w-full rounded-lg border border-slate-300 bg-white px-3 py-3 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-green-100">
+          <option value="">Select video type</option>
+          <option value="cloudinary">Upload Video to Cloudinary</option>
+          <option value="youtube">YouTube Video</option>
+        </select>
+
+        <div id="videoInput-${videoId}">
+          <div class="rounded-lg border border-dashed border-slate-300 bg-white p-4 text-center text-sm text-slate-500">
+            Select how you want to add this video.
+          </div>
+        </div>
+      `;
+
+      container.appendChild(card);
+      updateVideoCount();
+    }
+
+    function changeVideoType(id, type) {
+      const target = document.getElementById(`videoInput-${id}`);
+
+      if (type === 'cloudinary') {
+        target.innerHTML = `
+          <div class="rounded-lg border-2 border-dashed border-slate-300 bg-white p-5 text-center">
+            <input type="file" accept="video/mp4,video/webm,video/quicktime" class="mx-auto block w-full max-w-sm text-sm" />
+            <p class="mt-2 text-xs text-slate-500">Future implementation: upload directly to Cloudinary.</p>
+          </div>
+        `;
+      } else if (type === 'youtube') {
+        target.innerHTML = `
+          <label class="mb-2 block text-sm font-semibold">YouTube URL</label>
+          <input type="url" placeholder="https://www.youtube.com/watch?v=..."
+            class="w-full rounded-lg border border-slate-300 bg-white p-3 outline-none focus:border-brand focus:ring-2 focus:ring-green-100" />
+          <p class="mt-2 text-xs text-slate-500">Future implementation will validate the URL and store the YouTube video ID.</p>
+        `;
+      } else {
+        target.innerHTML = `
+          <div class="rounded-lg border border-dashed border-slate-300 bg-white p-4 text-center text-sm text-slate-500">
+            Select how you want to add this video.
+          </div>
+        `;
+      }
+    }
+
+    function removeVideo(id) {
+      document.querySelector(`[data-video-id="${id}"]`)?.remove();
+      updateVideoCount();
+    }
+
+    function updateVideoCount() {
+      const count = document.getElementById('videosContainer').children.length;
+      document.getElementById('videoCount').textContent = `${count} / 2`;
+      document.getElementById('addVideoButton').disabled = count >= 2;
+      document.getElementById('addVideoButton').classList.toggle('opacity-50', count >= 2);
+      document.getElementById('addVideoButton').classList.toggle('cursor-not-allowed', count >= 2);
+    }
+
+    function openPreview() {
+      const title = document.getElementById('title').value || 'Untitled Article';
+      const excerpt = document.getElementById('excerpt').value || '';
+      const article = document.getElementById('previewArticle');
+
+      let html = `
+        <div class="mx-auto max-w-3xl">
+          <div class="mb-4 text-xs font-semibold uppercase tracking-wider text-brand">ChronicleFiles</div>
+          <h1 class="text-3xl font-bold leading-tight text-slate-900 sm:text-5xl">${escapeHtml(title)}</h1>
+          ${excerpt ? `<p class="mt-5 text-lg leading-8 text-slate-600">${escapeHtml(excerpt)}</p>` : ''}
+          <div class="my-8 border-t border-slate-200"></div>
+      `;
+
+      document.querySelectorAll('#contentBlocks > div').forEach(block => {
+        const type = block.dataset.type;
+
+        if (type === 'paragraph') {
+          const value = block.querySelector('.content-input')?.value || '';
+          if (value) html += `<p class="mb-5 text-base leading-8 text-slate-700">${escapeHtml(value).replace(/\n/g, '<br>')}</p>`;
+        } else if (type === 'heading2') {
+          const value = block.querySelector('.content-input')?.value || '';
+          if (value) html += `<h2 class="mb-4 mt-8 text-2xl font-bold text-slate-900">${escapeHtml(value)}</h2>`;
+        } else if (type === 'heading3') {
+          const value = block.querySelector('.content-input')?.value || '';
+          if (value) html += `<h3 class="mb-3 mt-6 text-xl font-bold text-slate-900">${escapeHtml(value)}</h3>`;
+        } else if (type === 'quote') {
+          const value = block.querySelector('.content-input')?.value || '';
+          if (value) html += `<blockquote class="my-6 border-l-4 border-brand bg-green-50 px-5 py-4 italic text-slate-700">${escapeHtml(value)}</blockquote>`;
+        } else if (type === 'bullet' || type === 'numbered') {
+          const value = block.querySelector('.content-input')?.value || '';
+          const items = value.split('\n').filter(Boolean).map(x => `<li>${escapeHtml(x)}</li>`).join('');
+          if (items) html += `<${type === 'bullet' ? 'ul' : 'ol'} class="mb-5 ml-6 list-${type === 'bullet' ? 'disc' : 'decimal'} space-y-2 text-slate-700">${items}</${type === 'bullet' ? 'ul' : 'ol'}>`;
+        } else if (type === 'hr') {
+          html += `<hr class="my-8 border-slate-200" />`;
+        } else if (type === 'link') {
+          const text = block.querySelector('.content-link-text')?.value || '';
+          const url = block.querySelector('.content-link-url')?.value || '#';
+          if (text) html += `<p class="mb-5"><a href="${escapeHtml(url)}" class="font-semibold text-brand underline">${escapeHtml(text)}</a></p>`;
+        } else if (type === 'image') {
+          html += `<div class="my-6 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-sm text-slate-500">Image preview — Cloudinary upload will be connected later.</div>`;
+        }
+      });
+
+      html += `
+          <div class="mt-10 rounded-xl bg-slate-50 p-5 text-sm text-slate-500">
+            Video embeds will appear here after the Cloudinary/YouTube integration is connected.
+          </div>
+        </div>
+      `;
+
+      article.innerHTML = html;
+      document.getElementById('previewModal').classList.remove('hidden');
+      document.body.classList.add('overflow-hidden');
+    }
+
+    function closePreview() {
+      document.getElementById('previewModal').classList.add('hidden');
+      document.body.classList.remove('overflow-hidden');
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, char => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+      }[char]));
+    }
+
+    function saveDraft() {
+      alert('Demo only — Save Draft API will be connected later.');
+    }
+
+    function publishPost() {
+      alert('Demo only — Publish API will be connected later.');
+    }
+
+    // Start with one paragraph to make the editor immediately usable.
+    addBlock('paragraph');
+  </script>
+</body>
+</html>
+
