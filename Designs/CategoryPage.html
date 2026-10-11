@@ -396,6 +396,7 @@
 
         <nav class="desktop-nav flex items-center gap-7 text-[13px] font-bold text-gray-700">
           <a href="index.html" class="transition hover:text-brand">Home</a>
+          <a href="category.html?category=latest" class="transition hover:text-brand">Latest</a>
           <a href="category.html?category=News" class="transition hover:text-brand">News</a>
           <a href="category.html?category=Technology" class="transition hover:text-brand">Technology</a>
 
@@ -430,6 +431,7 @@
 
       <nav id="mobileMenu" class="mobile-menu pb-3 md:hidden">
         <a href="index.html">Home</a>
+        <a href="category.html?category=latest">Latest</a>
         <a href="category.html?category=News">News</a>
         <a href="category.html?category=Technology">Technology</a>
         <button id="mobileCategoriesButton" aria-expanded="false" aria-controls="mobileCategories"
@@ -475,6 +477,7 @@
 
     <!-- Category navigation -->
     <nav aria-label="Article categories" class="flex flex-wrap gap-2 py-5">
+      <a href="category.html?category=latest" data-category-link="Latest" class="category-chip">Latest</a>
       <a href="category.html?category=Technology" data-category-link="Technology" class="category-chip">Technology</a>
       <a href="category.html?category=Education" data-category-link="Education" class="category-chip">Education</a>
       <a href="category.html?category=News" data-category-link="News" class="category-chip">News</a>
@@ -868,10 +871,11 @@
     const params = new URLSearchParams(window.location.search);
     const requestedCategory = params.get("category") || "Technology";
     const validCategories = ["Technology", "Education", "News", "Entertainment"];
+    const isLatest = requestedCategory.toLowerCase() === "latest";
 
     const currentCategory = validCategories.find(
       category => category.toLowerCase() === requestedCategory.toLowerCase()
-    ) || "Technology";
+    ) || (isLatest ? "Latest" : "Technology");
 
     const categoryTitle = document.getElementById("categoryTitle");
     const categoryDescription = document.getElementById("categoryDescription");
@@ -891,9 +895,11 @@
 
     categoryTitle.textContent = currentCategory;
     breadcrumbCategory.textContent = currentCategory;
-    categoryDescription.textContent = categoryDescriptions[currentCategory];
-    articleListHeading.textContent = currentCategory + " Articles";
-    document.title = currentCategory + " Articles | ChronicleFiles";
+    categoryDescription.textContent = isLatest
+      ? "Browse every story, with the newest articles first."
+      : categoryDescriptions[currentCategory];
+    articleListHeading.textContent = isLatest ? "Latest Articles" : currentCategory + " Articles";
+    document.title = isLatest ? "Latest Articles | ChronicleFiles" : currentCategory + " Articles | ChronicleFiles";
 
     document.querySelectorAll("[data-category-link]").forEach(link => {
       if (link.dataset.categoryLink === currentCategory) {
@@ -907,7 +913,7 @@
       const searchTerm = articleSearch.value.trim().toLowerCase();
 
       return demoArticles.filter(article => {
-        const matchesCategory = article.category === currentCategory;
+        const matchesCategory = isLatest || article.category === currentCategory;
         const searchableText = [
           article.title,
           article.excerpt,
@@ -915,7 +921,7 @@
         ].join(" ").toLowerCase();
 
         return matchesCategory && searchableText.includes(searchTerm);
-      });
+      }).sort((first, second) => new Date(second.date) - new Date(first.date));
     }
 
     function escapeHtml(value) {
