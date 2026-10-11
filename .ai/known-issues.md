@@ -185,3 +185,52 @@ Planned Fix:
 
 Important Notes:
 - this issue is a verification gap rather than a confirmed defect in the code itself
+
+## Issue: Production SEO origin and AdSense setup are not configured
+
+Status: Manual production setup required
+
+Symptoms:
+- article canonical links and absolute BlogPosting JSON-LD are omitted until `SITE_URL` is set to the verified production HTTPS origin
+- no real advertisements render because the Google AdSense script and ad-unit integration are intentionally not part of the Blog Page implementation
+
+Current behavior:
+- `SITE_URL` is validated and request hosts are not used as a fallback
+- ad placeholders render only when `ADS_ENABLED=true` and a valid `ADSENSE_PUBLISHER_ID` are supplied; otherwise the slots return no markup and reserve no space
+
+Remaining setup:
+- confirm and configure the production site origin
+- obtain AdSense approval and configure the real publisher ID
+- add manual ad-unit IDs where manual placements are chosen, or integrate Auto ads without duplicating manual placements
+- validate the integration and publish the configuration in production
+
+Affected files:
+- `.env.example`
+- `lib/public-site-config.ts`
+- `components/blog/ad-slot.tsx`
+- `app/post/[slug]/page.tsx`
+
+## Issue: Homepage persistence and configured-ad staging verification remain pending
+
+Status: Needs verification
+
+Symptoms:
+- Homepage Management, its protected API, published-post validation, and the public fallback logic are implemented, but no save/reload was performed against a known safe staging database.
+- The existing right-column ad priority can only be visually checked when the existing valid ad configuration is supplied.
+
+Root cause:
+- No authenticated browser session or database target explicitly classified as disposable staging was available for this task.
+
+Affected files:
+- `models/homepage-layout.ts`
+- `lib/homepage.ts`
+- `app/api/admin/homepage-layout/route.ts`
+- `app/admin-dashboard/homepage/page.tsx`
+- `components/admin-homepage/homepage-management.tsx`
+- `components/blog/homepage-page.tsx`
+
+Current workaround:
+- Verify TypeScript, lint, build, and source-level eligibility/ad conditions without mutating the configured database.
+
+Planned verification:
+- Use a known safe staging database and authenticated admin session to save all five slots, reload, change one slot, and exercise ad-enabled/ad-disabled and invalid-post fallbacks.

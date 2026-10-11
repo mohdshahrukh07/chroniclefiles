@@ -47,7 +47,7 @@ The repository currently contains the following actual configuration and depende
 
 The app uses Next.js App Router. Protected admin pages and public post/category pages use server components for data access; client components are used for interactive forms, dashboard controls, and browser analytics tracking.
 
-Active public routes include `/blog`, `/category/[slug]`, and `/post/[slug]`; `/` redirects to `/blog`. The analytics dashboard is `/admin-dashboard/analytics`, with events accepted at `/api/analytics/events`.
+Active public routes include `/`, `/blog`, `/category/[slug]`, and `/post/[slug]`. The root route is the data-backed homepage. Homepage slots are managed at `/admin-dashboard/homepage` and through the admin-authenticated `/api/admin/homepage-layout`. The analytics dashboard is `/admin-dashboard/analytics`, with events accepted at `/api/analytics/events`.
 
 ### src directory
 
@@ -57,17 +57,20 @@ The project does not use a `src/` directory. The root structure is the standard 
 
 Relevant implemented or active routes include:
 
-- `/` (redirects to `/blog`)
+- `/` (public homepage)
 - `/blog`
 - `/category/[slug]`
 - `/post/[slug]`
 - `/admin-dashboard`
+- `/admin-dashboard/homepage`
 - `/admin-dashboard/posts`
 - `/admin-dashboard/posts/new`
 - `/admin-dashboard/posts/[id]/edit`
 - `/admin-dashboard/analytics`
+- `/api/admin/homepage-layout`
+- `/api/analytics/events`
 
-Search, about, contact, privacy, and terms routes remain unimplemented.
+There is no standalone search route; archive search uses `/blog?q=...` and the homepage search submits to that listing. About, contact, privacy, and terms routes remain unimplemented.
 
 ### API and server actions
 
@@ -75,6 +78,10 @@ The main server-side actions are currently in:
 
 - app/admin-dashboard/actions.ts
 - app/admin-dashboard/posts/new/actions.ts
+
+The Homepage Management API is implemented as a route handler at
+`app/api/admin/homepage-layout/route.ts`; it requires the existing admin
+session and updates only explicitly submitted slot fields.
 
 These are responsible for:
 - admin sign-in and sign-out

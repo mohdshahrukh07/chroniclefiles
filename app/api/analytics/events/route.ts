@@ -30,7 +30,8 @@ function validPublicPath(value: unknown): value is string {
   return (
     typeof value === "string" &&
     value.length <= 160 &&
-    (value === "/blog" ||
+    (value === "/" ||
+      value === "/blog" ||
       /^\/category\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value) ||
       /^\/post\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value))
   );

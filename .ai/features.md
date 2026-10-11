@@ -68,11 +68,19 @@ Known limitations:
 Status: Implemented in code; production/browser verification remains pending
 
 Current behavior:
-- `/blog` lists published posts
-- `/category/[slug]` lists published posts in an existing category
-- `/post/[slug]` renders a published post
+- `/blog` is the special Latest archive and lists all eligible published posts across categories, newest first
+- `/category/[slug]` resolves a real Category document and lists only its published posts
+- both archives use nine-item server pagination, stable ordering, the saved overlay-card design, and real category labels
+- archives provide server-side Latest/Popular/Oldest sorting and title-first, tag-fallback search
+- the category archive sidebar uses configured square ad slots, published recommendations, and actual Explore Categories records; disabled ads render no reserved space
+- paginated archive metadata uses the trusted configured site origin and preserves each page's canonical URL
+- `/post/[slug]` renders a published post using the `Designs/Blogpage.html` editorial article layout
+- `/` renders the public Home Page using `Designs/Homepage.html` and five saved featured slots
 - scheduled/future posts are excluded
-- `/` redirects to `/blog`
+- article content blocks, including rich text, images, videos, and supported embeds, render in stored order
+- the article sidebar uses real related published posts and Category records
+- article metadata, social cards, and conditional BlogPosting JSON-LD use saved post fields and an explicit configured site origin
+- reusable sidebar and inline ad slots are presentation-only and emit no markup or reserved space when ads are disabled/unconfigured
 
 Relevant files:
 - app/page.tsx
@@ -83,8 +91,41 @@ Relevant files:
 - components/blog/
 
 Known limitations:
-- search and other publication pages are not implemented
-- public route behavior has not yet received browser-level validation
+- a production HTTPS `SITE_URL` must be configured before canonical links and absolute JSON-LD are emitted
+- Popular ordering uses available existing per-post page-view aggregates and is limited by the analytics collections' retention window; it does not fabricate popularity
+- no sitemap route/file currently exists; public archive links and canonicals use `/blog`, `/category/[slug]`, and `/post/[slug]`
+- actual AdSense script, approval, publisher configuration, and manual ad-unit IDs (if used) remain future setup
+
+## Homepage and Homepage Management
+
+Status: Implemented in code; authenticated database and ad staging verification pending
+
+Current behavior:
+- `/` renders the responsive editorial home page with Featured Stories, Latest Stories, Technology, Education & Learning, Entertainment, recommendations, real category links, and the saved design's footer sections.
+- The `HomepageLayout` model stores five selected post IDs in one primary configuration document.
+- `/admin-dashboard/homepage` is protected by the existing admin session and allows searching, reviewing, replacing, and clearing each selection before saving.
+- `GET` and `PATCH /api/admin/homepage-layout` require an admin session. The PATCH validates eligible published posts, avoids duplicates, and writes only requested fields.
+- The homepage uses the saved selection when eligible and falls back to distinct recent eligible posts for missing or ineligible slots.
+- Homepage carousels are bounded to six popular published posts for Latest Stories and five per real Technology, Education, and Entertainment category. Popularity uses recorded AnalyticsDaily page views; ties and posts without tracked views use publication recency and stable ID ordering. Carousel content is independent of the featured slots, so a featured post may appear again in its category/latest carousel.
+- A valid enabled `AdSlot` replaces the right-bottom story visually without clearing its saved fallback. When ads are disabled or invalid, the saved story returns; if neither exists, no right-bottom block is rendered.
+- Homepage article clicks use the existing `post-card` tracking marker; root page views use the existing privacy-conscious tracker and `/` is allowlisted by the analytics endpoint.
+- The home metadata uses the trusted HTTPS `SITE_URL` for its canonical and Open Graph URLs.
+
+Relevant files:
+- `models/homepage-layout.ts`
+- `types/homepage.ts`
+- `lib/homepage.ts`
+- `app/api/admin/homepage-layout/route.ts`
+- `app/admin-dashboard/homepage/page.tsx`
+- `components/admin-homepage/homepage-management.tsx`
+- `components/blog/homepage-page.tsx`
+- `components/blog/homepage-carousel.tsx`
+- `specs/homepage-management.md`
+
+Known limitations:
+- Search loads at most 50 published candidates at a time; a title/tag search can locate older eligible posts.
+- Database persistence and ad-priority behavior still require non-production staging verification with an authenticated admin and valid ad configuration.
+- `AdSlot` remains a configuration-gated placeholder; no Google AdSense script or invented publisher/unit IDs were added.
 
 ## Categories
 
@@ -318,20 +359,24 @@ Relevant files:
 
 ## SEO
 
-Status: Partially implemented
+Status: Partially implemented; article detail metadata is implemented
 
 Current behavior:
 - posts support `seo.metaTitle` and `seo.metaDescription`
 - create/edit forms include SEO fields
 - save action stores these values
+- `/post/[slug]` generates title, description, Open Graph and Twitter metadata from saved SEO fields with post title/excerpt fallbacks
+- canonical links and BlogPosting JSON-LD are emitted only when a valid HTTPS `SITE_URL` and valid publication date are available
 
 Relevant files:
 - models/post.ts
 - components/admin-posts/post-editor-form.tsx
 - app/admin-dashboard/posts/new/actions.ts
+- app/post/[slug]/page.tsx
+- lib/public-site-config.ts
 
 Known limitations:
-- full metadata generation for public pages is not yet implemented across a public site
+- the verified production domain is not present in repository configuration; set `SITE_URL` to the production HTTPS origin
 
 ## Post Analytics
 

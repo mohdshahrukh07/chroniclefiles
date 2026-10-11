@@ -135,11 +135,37 @@ The Create Post flow follows the structure of `Designs/createPost.html` and pres
 
 The actual implementation continues to use the existing design direction while also supporting the newer ordered content and embed functionality.
 
+## Public article detail design
+
+`app/post/[slug]/page.tsx` follows `Designs/Blogpage.html`: a responsive reading column, a 300px desktop sidebar, article category/title/excerpt/date/thumbnail, share actions, related story cards, and the ordered category sidebar. The design uses the ChronicleFiles green, teal, pale blue-gray, white, and dark-text palette. Mobile navigation uses the native disclosure element; the article sidebar stacks below the reading column at narrow widths.
+
+## Public homepage
+
+`app/page.tsx` follows `Designs/Homepage.html`: a sticky ChronicleFiles header
+with Latest and real Category navigation plus search; the 3-column featured
+stories area; responsive horizontal story carousels; a two-column content and
+sidebar region; the category strip; and the editorial footer. Cards use the
+saved green category labels and dark image gradient, with optimized intrinsic
+dimensions and visible keyboard focus. The carousel controls scroll the story
+track by one card and preserve touch/trackpad scrolling.
+
+The admin homepage manager reuses the existing responsive admin sidebar,
+mobile navigation, and header. Its five focused slot panels show thumbnail,
+title, category, select/change/clear actions, and pending save feedback. The
+right-bottom panel explicitly communicates its ad-fallback role.
+
+`AdSlot` supports square sidebar and horizontal inline placements. The component renders only after explicit advertising enablement and a valid publisher ID; otherwise it returns no element, so recommendations and categories remain visible without ad gaps.
+
+## Public category and Latest archives
+
+`app/blog/page.tsx` and `app/category/[slug]/page.tsx` share the responsive layout from `Designs/CategoryPage.html`: breadcrumb, title/description, category chips, optional horizontal ad positions, a nine-card 5:4 image grid with a restrained dark text overlay, four-number pagination, and the sidebar. The category navigation initially displays Latest plus at most three real category links; More expands the remaining tags and Less collapses them. Search and sort controls sit with the listing heading and remain full-width on mobile; sort options are Latest, Popular, and Oldest. Pagination remains visible for a single page with disabled previous/next controls. The sidebar order is square ad, Recommended Reads, Explore Categories, square ad. At tablet widths it becomes a two-column sidebar; it stacks on mobile and returns to one column at desktop widths. The Latest chip points to `/blog` and is not a Category record. Cards use the existing ChronicleFiles palette, focus states, and explicit analytics click marker.
+
 ## Design reference files
 
 Relevant visual references in the repository:
 - Designs/dashboard.html
 - Designs/createPost.html
+- Designs/Homepage.html
 
 These files should be treated as visual references and not as final source-of-truth logic.
 

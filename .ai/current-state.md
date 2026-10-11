@@ -170,8 +170,8 @@ Relevant files:
 ### Public blog routes and analytics
 
 Current state:
-- public blog, category, and post routes render only published, non-future posts
-- the homepage redirects to `/blog`
+- public home, blog, category, and post routes render only published, non-future posts
+- the homepage uses a persisted `HomepageLayout` and distinct newest-post fallbacks
 - anonymous page-view, active-reading-time, and allowlisted-click tracking is implemented
 - analytics events and daily aggregates use dedicated collections separate from content collections
 - the protected dashboard aggregates daily analytics and provides date filters, trends, breakdowns, and post performance
@@ -181,6 +181,7 @@ What works in code:
 - random first-party visitor cookie; only its hash is stored
 - device class inferred from User-Agent and country read only from trusted edge country headers
 - event validation, duplicate event IDs, process-local rate limiting, TTL indexes, and transactional daily aggregation
+- root path `/` is allowlisted and resolved for page-view tracking; post-card clicks retain their explicit markers
 - dashboard queries MongoDB aggregates rather than loading raw events
 
 What is still pending:
@@ -188,6 +189,23 @@ What is still pending:
 - safe event-write/read testing against an identified staging replica-set MongoDB; the configured target does not clearly identify as staging/test/dev, so no DB connection or event writes were attempted
 - validation of process-local rate-limiting behavior across multiple app instances
 - transaction support in the staging MongoDB environment
+
+### Public homepage and Homepage Management
+
+Current status: Implemented in code; staging persistence and ad rendering remain to be verified.
+
+- `/` follows `Designs/Homepage.html` and renders featured posts, Latest, Technology, Education, Entertainment, recommendations, real category links, and the footer.
+- `HomepageLayout` stores the five featured post IDs; the admin page and GET/PATCH API are protected by the existing admin session.
+- The API only accepts eligible published posts and partial PATCHes preserve all untouched slots. Admin choices are searchable, reviewable, and can be cleared before saving.
+- Ads use the existing enablement and publisher validation. When configured, the square right-column AdSlot replaces only the `rightBottomPostId` card; the ID stays persisted for fallback.
+- Public fallbacks avoid duplicates and exclude drafts and future posts. If no eligible post/ad exists, the right-bottom block is omitted.
+- Homepage carousels are separate from featured-slot selection, so popular eligible posts remain available in carousels even if also featured. Latest Stories is capped at six and each Technology, Education, and Entertainment carousel at five; ranking uses AnalyticsDaily page views, then newest publication date and stable ID.
+- Canonical metadata uses the configured trusted HTTPS `SITE_URL`; no hostname is inferred from requests.
+
+Outstanding manual checks:
+- Configure a known safe staging database, sign in as admin, select/save/reload five posts, and verify a one-slot change preserves the other four.
+- Verify ads both enabled and disabled with the existing valid/invalid ad environment configuration; do not use production data for this test.
+- Review desktop/tablet/mobile layout and public interactions in a browser. The configured app environment was not mutated during implementation.
 
 Verified during follow-up:
 - Apply Range date and interval fields now use controlled state with `onChange`; changing values still submits the existing GET form parameters.
@@ -280,6 +298,46 @@ What to verify:
 - browser-test dashboard empty state and responsive rendering
 - confirm direct article visits and refreshes do not increment click metrics
 
+### Public article detail page
+
+Current status: Implemented and browser-checked against a real published article.
+
+What works:
+- `/post/[slug]` keeps the existing route and renders the saved design as an editorial article with responsive sidebar, share controls, and related stories
+- the server query excludes drafts and future publications; the stored ordered content structure and legacy normalization are reused without modifying posts
+- sidebar recommendations prioritize the current post's category and exclude that post; Explore Categories and navigation use actual database categories
+- route-level loading, not-found, and recoverable error UIs are available
+- ad slots are reusable and configuration-gated; with advertising disabled or incomplete, no slot elements or reserved ad gaps are rendered
+- metadata uses the post's SEO fields and actual title/excerpt; canonical and structured-data URLs use only an explicitly configured HTTPS `SITE_URL`
+- existing analytics tracking is reused; browser verification intercepted `/api/analytics/events` to avoid creating test analytics records
+
+Verified in the local browser:
+- `/blog` and a real published article loaded; the article had one H1 and rendered its rich text, image, and YouTube embed
+- sidebar order and category links were present; ad markup was absent when configuration was unavailable
+- desktop, tablet, and mobile layouts fit their actual browser viewport with no horizontal page overflow; the native mobile category menu opened
+- an unknown slug displayed the custom not-found state. Next.js streamed the status as HTTP 200 due to `loading.tsx` and emitted noindex; this is the documented App Router soft-404 behavior after streaming starts.
+
+Remaining setup:
+- set `SITE_URL` to the verified production HTTPS origin to enable absolute canonical URLs and BlogPosting JSON-LD
+- real AdSense integration still requires publisher configuration, approval, production deployment, and ad-unit IDs for manual placements where applicable; no Google script is present
+
 ## Summary
 
 The repository is currently in a functional but still evolving admin/content-management stage. The core architecture is centered around a single ordered `content` array. Analytics is implemented in code, and the date-field warning is fixed, but end-to-end tracking verification requires an identified safe staging database and an authenticated browser session.
+
+### Public category and Latest archives
+
+Current status: Implemented and locally browser-checked against existing published data.
+
+What works:
+- `/blog` is the special Latest archive and queries all eligible published posts without a category filter or a required Latest Category record.
+- `/category/[slug]` resolves a real Category document and filters posts by its ObjectId.
+- Both routes share the saved Category Page design, real category labels, nine-post pagination, stable newest-first ordering, and responsive image-overlay cards.
+- The required sidebar order and existing ad configuration gate are reused; category navigation and Explore Categories use actual Category records.
+- Pagination metadata is page-specific and uses only the configured HTTPS `SITE_URL`; analytics retains its validated base route path and opt-out behavior.
+
+Known verification/setup:
+- Canonical URLs require the verified production `SITE_URL`, which is not present in checked-in configuration.
+- No sitemap route/file was found, so sitemap consistency could not be checked.
+- Available browser data contains fewer than nine eligible records; second-page pagination and draft/future filtering were verified from code, not exercised using modified records.
+- No post/category content was written or modified during browser verification; analytics requests were intercepted.

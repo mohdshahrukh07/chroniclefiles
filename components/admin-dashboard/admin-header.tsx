@@ -7,11 +7,15 @@ import type { logoutAction } from "@/app/admin-dashboard/actions";
 interface AdminHeaderProps {
   username: string;
   logoutAction: typeof logoutAction;
+  title?: string;
+  description?: string;
 }
 
 export function AdminHeader({
   username,
   logoutAction: signOut,
+  title = "Dashboard",
+  description = "Manage your ChronicleFiles content.",
 }: AdminHeaderProps) {
   return (
     <header className="relative z-10 border-b border-gray-200 bg-white">
@@ -19,10 +23,8 @@ export function AdminHeader({
         <MobileAdminNavigation username={username} />
         <div className="hidden min-w-0 flex-1 items-center justify-between gap-6 lg:flex">
           <div>
-            <h1 className="text-2xl font-bold text-[#444444]">Dashboard</h1>
-            <p className="mt-1 text-sm text-gray-500">
-              Manage your ChronicleFiles content.
-            </p>
+            <h1 className="text-2xl font-bold text-[#444444]">{title}</h1>
+            <p className="mt-1 text-sm text-gray-500">{description}</p>
           </div>
           <div className="flex shrink-0 items-center gap-3">
             <form action={signOut}>
@@ -42,11 +44,9 @@ export function AdminHeader({
         <div className="flex w-full items-center justify-between gap-3 lg:hidden">
           <div>
             <h1 className="text-xl font-bold text-[#444444] sm:text-2xl">
-              Dashboard
+              {title}
             </h1>
-            <p className="mt-1 text-sm text-gray-500">
-              Manage your ChronicleFiles content.
-            </p>
+            <p className="mt-1 text-sm text-gray-500">{description}</p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <form action={signOut}>

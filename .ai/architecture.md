@@ -7,7 +7,7 @@
 The app uses Next.js App Router with route groups and server-generated pages under `app/`.
 
 Key routes:
-- `/` – redirects to `/blog`
+- `/` – database-backed public home page
 - `/blog` – public published-post listing
 - `/category/[slug]` – public published posts in a category
 - `/post/[slug]` – public published post detail
@@ -17,6 +17,8 @@ Key routes:
 - `/admin-dashboard/posts` – protected list of posts
 - `/admin-dashboard/posts/new` – create post form
 - `/admin-dashboard/posts/[id]/edit` – edit post form
+- `/admin-dashboard/homepage` – protected featured-story management
+- `/api/admin/homepage-layout` – admin-authenticated HomepageLayout read/update
 
 ### Shared UI system
 
@@ -57,7 +59,21 @@ Important point:
 
 ### Public post pages
 
-The public reader surfaces currently include the blog listing, category listing, and article detail routes. Database reads are server-side and restrict content to published posts whose `publishedAt` is not in the future. These routes are instrumented with the client `PublicAnalyticsTracker`; the root route redirects to `/blog`.
+The public reader surfaces include the home page, blog listing, category listing, and article detail routes. Database reads are server-side and restrict content to published posts whose `publishedAt` is not in the future. Public routes use the client `PublicAnalyticsTracker`; `/` and `/blog` are separately tracked page paths.
+
+The public root route follows `Designs/Homepage.html`. `getPublicHomepageData()` reads eligible posts and real categories, resolves the five slot IDs from the singleton-style `HomepageLayout` document, and substitutes distinct newest eligible posts for missing or ineligible selections. The right-bottom saved post remains in MongoDB while a valid enabled `AdSlot` is shown in its place. When ads are unavailable, that saved post is rendered; neither option creates an empty slot.
+
+`/admin-dashboard/homepage` is protected by the existing admin session. The searchable post picker reads eligible published posts from `GET /api/admin/homepage-layout`; `PATCH` validates submitted IDs and the merged distinct slot values, writes only the submitted slot fields to preserve other selections, and revalidates the root and management pages. The model stores no ad state, no homepage fields are added to Post or Category, and homepage data is read at request time rather than stored in a static cache.
+
+The article detail page at `/post/[slug]` follows `Designs/Blogpage.html`. Its server data accessor returns the published article and ordered normalized content; sidebar queries prioritize other published posts from the same category, then fill from the latest published posts. Category navigation and the sidebar use real Category documents. No content model or schema changes are required.
+
+Article metadata uses saved SEO title/description values with the actual post title/excerpt as fallbacks. Absolute canonical and JSON-LD URLs are derived only from the configured HTTPS `SITE_URL`, never the incoming request host. Article JSON-LD is omitted until both that origin and a valid publication date are available.
+
+Ad placement is presentation-only: `AdSlot` is reused for square sidebar and inline article positions, and inline slots follow the hero and each outer ordered content block. Slots return `null` unless `ADS_ENABLED=true` and a valid `ADSENSE_PUBLISHER_ID` are configured, so disabled ads do not consume layout space. There is no AdSense script or ad-unit identifier integration yet.
+
+The public archives share `CategoryListingPage` and the `PublicPostCardData` shape while retaining distinct server queries: `/blog` calls `getPublishedPostListing()` without a category ID, and `/category/[slug]` first resolves a real Category then filters by its ObjectId. Both use the existing published-status/future-date filter, a nine-post page size, and deterministic descending `publishedAt` then `_id` sort order. Missing publication dates remain eligible under the existing query rule, display no fabricated date, and sort after dated posts. Pagination links retain the `page` query for self-canonical URLs; the stable unique `_id` tiebreaker prevents nondeterministic ordering between equal dates. The Latest page is not represented in MongoDB and the sidebar/category chips only use real categories.
+
+Archive controls submit `sort` (`latest`, `popular`, `oldest`) and `q` using GET. Search is scoped to published/non-future posts and, on category routes, the resolved category ID. It matches title first; tags are queried only when there are no title matches. User input is trimmed, length-bounded, and regex-escaped. Popular ordering uses a per-post aggregation over the existing AnalyticsDaily page-view rows, with publication date as the deterministic tie-breaker; its coverage is limited by existing analytics retention. Search is omitted from canonical metadata, while page/sort state is retained.
 
 ## Backend
 

@@ -175,6 +175,71 @@ Relevant files:
 
 Operational note: event recording uses MongoDB transactions and therefore needs replica-set support. Rate limiting is currently process-local.
 
+## Public article page workflow
+
+Request `/post/[slug]`
+→ server query loads only a published post with no future `publishedAt`
+→ ordered `content[]` is normalized and rendered in sequence
+→ sidebar queries same-category published recommendations, then recent fallbacks, plus existing categories
+→ public analytics tracker retains page-view and engagement behavior
+
+Article metadata uses `seo.metaTitle` / `seo.metaDescription` when present and otherwise uses the post's actual title / excerpt. `SITE_URL` is an explicit HTTPS origin used for canonical URLs and JSON-LD; request hosts are never used as canonical origins. `AdSlot` is a reusable presentation component, disabled unless `ADS_ENABLED` and a syntactically valid `ADSENSE_PUBLISHER_ID` are configured. It does not load scripts or emit fake unit IDs.
+
 ## Notes about content ordering
 
 The project currently treats the single ordered content array as the canonical pattern for content flow across create, save, edit, and preview. This is the main architectural requirement for preserving insertion order and avoiding duplicate state.
+
+## Public Category and Latest archives
+
+Request `/blog?page=N` or `/category/[slug]?page=N`
+→ parse the page parameter and apply the shared published-status/future-date filter
+→ Latest queries across every category; a category archive resolves its Category first and filters by category ObjectId
+→ count matching posts and fetch one nine-item page in deterministic publication-date order
+→ populate card category labels from existing Category documents
+→ render the shared responsive listing, real category navigation, and ordered reusable sidebar
+
+The Latest route is `/blog`; do not create or query a Category named Latest for its archive posts. Pagination uses ordinary internal links and preserves a page-specific canonical URL when `SITE_URL` is configured. `PublicAnalyticsTracker` is keyed by page number so archive pagination creates a new page-view session while sending the unchanged, API-validated route path; card clicks remain explicitly marked and DNT/GPC behavior is unchanged.
+
+Relevant files:
+- app/blog/page.tsx
+- app/category/[slug]/page.tsx
+- lib/public-posts.ts
+- components/blog/category-listing-page.tsx
+- components/blog/category-post-card.tsx
+- components/blog/article-sidebar.tsx
+
+Archive filtering:
+- Default `sort=latest` uses descending publication date; `sort=oldest` uses ascending valid dates with undated posts afterward.
+- `sort=popular` ranks by recorded per-post page views from AnalyticsDaily, then publication date; data availability follows analytics retention.
+- `q` searches eligible titles first. If there are no title matches in scope, it searches eligible post tags. The query remains scoped by category on normal category pages.
+- Submitting search/sort resets page to the first page; pager links preserve non-default sort and search state.
+
+## Homepage and Homepage Management
+
+Public request `/`
+→ query the singleton `HomepageLayout` and eligible published posts
+→ resolve each selected slot and replace unavailable/duplicate selections with distinct recent eligible posts
+→ render the saved responsive homepage design and actual Category records
+→ show a valid enabled right-column AdSlot instead of the saved right-bottom story, without changing the saved slot
+→ track the root page view and explicit article-card clicks using the existing analytics and DNT/GPC behavior
+
+Admin flow:
+
+`/admin-dashboard/homepage`
+→ existing admin session guard
+→ searchable eligible-post picker for each of the five slots
+→ review pending choices on the management screen
+→ `PATCH /api/admin/homepage-layout` with only changed slot fields
+→ validate IDs/status/publication dates and distinctness
+→ update only the requested fields and revalidate `/`
+
+Relevant files:
+- `models/homepage-layout.ts`
+- `types/homepage.ts`
+- `lib/homepage.ts`
+- `app/api/admin/homepage-layout/route.ts`
+- `app/admin-dashboard/homepage/page.tsx`
+- `components/admin-homepage/homepage-management.tsx`
+- `components/blog/homepage-page.tsx`
+- `components/blog/homepage-carousel.tsx`
+- `specs/homepage-management.md`

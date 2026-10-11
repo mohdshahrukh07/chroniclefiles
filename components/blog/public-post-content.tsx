@@ -1,14 +1,25 @@
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 import Image from "next/image";
 import type { JSONContent } from "@tiptap/core";
 import type { PostContentItem } from "@/models/post";
 import { PostEmbedRenderer } from "@/components/post-embed-renderer";
+import { AdSlot } from "@/components/blog/ad-slot";
 
 function safeHref(value: unknown): string | null {
   if (typeof value !== "string") return null;
   try {
     const url = new URL(value);
     return ["https:", "http:", "mailto:"].includes(url.protocol) ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+function safeImageSrc(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  try {
+    const url = new URL(value);
+    return ["https:", "http:"].includes(url.protocol) ? value : null;
   } catch {
     return null;
   }
@@ -52,7 +63,7 @@ function RichTextNode({
 
   if (node.type === "hardBreak") return <br key={nodeKey} />;
   if (node.type === "horizontalRule") {
-    return <hr key={nodeKey} className="my-8 border-slate-200" />;
+    return <hr key={nodeKey} className="my-8 border-[#e5ebe7]" />;
   }
   const children = (node.content ?? []).map((child, index) => (
     <RichTextNode
@@ -66,27 +77,27 @@ function RichTextNode({
     case "doc":
       return <>{children}</>;
     case "paragraph":
-      return <p className="my-5 text-base leading-8 text-slate-700">{children}</p>;
+      return <p className="mb-[18px] text-[17px] leading-[1.9] text-[#4b554f]">{children}</p>;
     case "heading": {
       const level = node.attrs?.level;
       if (level === 2) {
-        return <h2 className="mb-4 mt-10 font-serif text-3xl font-bold text-slate-900">{children}</h2>;
+        return <h2 className="mb-3 mt-[30px] font-sans text-[27px] font-extrabold leading-[1.3] text-[#28342d] max-[720px]:text-2xl">{children}</h2>;
       }
       if (level === 3) {
-        return <h3 className="mb-3 mt-8 font-serif text-2xl font-bold text-slate-900">{children}</h3>;
+        return <h3 className="mb-3 mt-8 font-sans text-2xl font-bold text-[#28342d]">{children}</h3>;
       }
-      return <p className="my-5 text-base leading-8 text-slate-700">{children}</p>;
+      return <p className="mb-[18px] text-[17px] leading-[1.9] text-[#4b554f]">{children}</p>;
     }
     case "bulletList":
-      return <ul className="my-5 ml-6 list-disc space-y-2 text-slate-700">{children}</ul>;
+      return <ul className="my-5 ml-6 list-disc space-y-2 text-[#4b554f]">{children}</ul>;
     case "orderedList":
-      return <ol className="my-5 ml-6 list-decimal space-y-2 text-slate-700">{children}</ol>;
+      return <ol className="my-5 ml-6 list-decimal space-y-2 text-[#4b554f]">{children}</ol>;
     case "listItem":
       return <li>{children}</li>;
     case "blockquote":
-      return <blockquote className="my-6 border-l-4 border-[#02a95c] bg-green-50 px-5 py-4 italic text-slate-700">{children}</blockquote>;
+      return <blockquote className="my-6 border-l-4 border-[#02A95C] bg-[#edf7f1] px-5 py-4 italic text-[#4b554f]">{children}</blockquote>;
     case "image": {
-      const src = safeHref(node.attrs?.src);
+      const src = safeImageSrc(node.attrs?.src);
       if (!src) return null;
       return (
         <figure className="my-8">
@@ -112,71 +123,127 @@ export function PublicPostContent({
   blocks: PostContentItem[];
 }) {
   return (
-    <div className="[&_a]:break-words">
+    <div className="mt-[26px] font-sans text-[17px] leading-[1.9] text-[#4b554f] max-[720px]:text-base [&_a]:break-words">
       {blocks.map((block, index) => {
         const key = `article-${index}`;
+        const ad = (
+          <AdSlot
+            format="inline"
+            placement={`article-content-block-${index + 1}`}
+          />
+        );
         if (block.type === "richText") {
           return (
-            <RichTextNode
-              key={key}
-              node={block.content as JSONContent}
-              nodeKey={key}
-            />
+            <Fragment key={key}>
+              <RichTextNode
+                node={block.content as JSONContent}
+                nodeKey={key}
+              />
+              {ad}
+            </Fragment>
           );
         }
         if (block.type === "image") {
-          const src = safeHref(block.url);
-          return src ? (
-            <figure key={key} className="my-8">
-              <Image
-                unoptimized
-                src={src}
-                alt={block.alt ?? ""}
-                width={1200}
-                height={800}
-                className="mx-auto max-h-[40rem] w-full rounded-xl object-contain"
-              />
-            </figure>
-          ) : null;
+          const src = safeImageSrc(block.url);
+          return (
+            <Fragment key={key}>
+              {src && (
+                <figure className="my-8">
+                  <Image
+                    unoptimized
+                    src={src}
+                    alt={block.alt ?? ""}
+                    width={1200}
+                    height={800}
+                    className="mx-auto max-h-[40rem] w-full rounded-xl object-contain"
+                  />
+                </figure>
+              )}
+              {ad}
+            </Fragment>
+          );
         }
         if (block.type === "embed") {
-          return <PostEmbedRenderer key={key} embed={block} />;
+          return (
+            <Fragment key={key}>
+              <PostEmbedRenderer embed={block} />
+              {ad}
+            </Fragment>
+          );
         }
         if (block.type === "heading2") {
-          return <h2 key={key} className="mb-4 mt-10 font-serif text-3xl font-bold text-slate-900">{block.text}</h2>;
+          return (
+            <Fragment key={key}>
+              <h2 className="mb-3 mt-[30px] font-sans text-[27px] font-extrabold leading-[1.3] text-[#28342d] max-[720px]:text-2xl">
+                {block.text}
+              </h2>
+              {ad}
+            </Fragment>
+          );
         }
         if (block.type === "heading3") {
-          return <h3 key={key} className="mb-3 mt-8 font-serif text-2xl font-bold text-slate-900">{block.text}</h3>;
+          return (
+            <Fragment key={key}>
+              <h3 className="mb-3 mt-8 font-sans text-2xl font-bold text-[#28342d]">
+                {block.text}
+              </h3>
+              {ad}
+            </Fragment>
+          );
         }
         if (block.type === "quote") {
-          return <blockquote key={key} className="my-6 border-l-4 border-[#02a95c] bg-green-50 px-5 py-4 italic text-slate-700">{block.text}</blockquote>;
+          return (
+            <Fragment key={key}>
+              <blockquote className="my-6 border-l-4 border-[#02A95C] bg-[#edf7f1] px-5 py-4 italic text-[#4b554f]">
+                {block.text}
+              </blockquote>
+              {ad}
+            </Fragment>
+          );
         }
         if (block.type === "bullet" || block.type === "numbered") {
           const List = block.type === "bullet" ? "ul" : "ol";
           return (
-            <List
-              key={key}
-              className={`my-5 ml-6 space-y-2 text-slate-700 ${
-                block.type === "bullet" ? "list-disc" : "list-decimal"
-              }`}
-            >
-              {block.text.split(/\r?\n/).filter((line) => line.trim()).map((line, lineIndex) => (
-                <li key={`${key}-${lineIndex}`}>{line}</li>
-              ))}
-            </List>
+            <Fragment key={key}>
+              <List
+                className={`my-5 ml-6 space-y-2 text-[#4b554f] ${
+                  block.type === "bullet" ? "list-disc" : "list-decimal"
+                }`}
+              >
+                {block.text.split(/\r?\n/).filter((line) => line.trim()).map((line, lineIndex) => (
+                  <li key={`${key}-${lineIndex}`}>{line}</li>
+                ))}
+              </List>
+              {ad}
+            </Fragment>
           );
         }
         if (block.type === "link") {
           const href = safeHref(block.url);
-          return href ? (
-            <p key={key} className="my-5 text-base leading-8">
-              <a href={href} rel="noreferrer" data-analytics-event="article-link" className="text-[#02a95c] underline underline-offset-2">
-                {block.text}
-              </a>
-            </p>
-          ) : null;
+          return (
+            <Fragment key={key}>
+              {href && (
+                <p className="my-5 text-[17px] leading-[1.9]">
+                  <a
+                    href={href}
+                    rel="noreferrer"
+                    data-analytics-event="article-link"
+                    className="text-[#02A95C] underline underline-offset-2"
+                  >
+                    {block.text}
+                  </a>
+                </p>
+              )}
+              {ad}
+            </Fragment>
+          );
         }
-        return <hr key={key} className="my-8 border-slate-200" />;
+        return (
+          <Fragment key={key}>
+            <hr className="my-8 border-[#e5ebe7]" />
+            {ad}
+          </Fragment>
+        );
       })}
     </div>
   );

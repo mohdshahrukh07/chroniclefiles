@@ -4,6 +4,7 @@ import {
   FolderKanban,
   ChartNoAxesCombined,
   LayoutDashboard,
+  PanelsTopLeft,
   Newspaper,
   Users,
 } from "lucide-react";
@@ -11,6 +12,7 @@ import {
 const navigationItems = [
   { label: "Dashboard", href: "/admin-dashboard", icon: LayoutDashboard },
   { label: "Posts", href: "/admin-dashboard/posts", icon: Newspaper },
+  { label: "Homepage Management", href: "/admin-dashboard/homepage", icon: PanelsTopLeft },
   { label: "Categories", href: "/admin-dashboard/categories", icon: FolderKanban },
   { label: "Analytics", href: "/admin-dashboard/analytics", icon: ChartNoAxesCombined },
   { label: "Media", href: "/admin-dashboard/media", icon: Files },

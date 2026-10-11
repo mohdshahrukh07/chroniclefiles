@@ -19,6 +19,7 @@ Current collection/model set identified from the codebase:
 - `categories` — `models/category.ts`
 - `media` — `models/media.ts`
 - `posts` — `models/post.ts`
+- `homepagelayouts` — `models/homepage-layout.ts`
 - `pageviews` — `models/page-view.ts`
 - `engagementevents` — `models/engagement-event.ts`
 - `analyticsvisitors` — `models/analytics-visitor.ts`
@@ -47,6 +48,23 @@ Schema fields:
 - timestamps
 
 Category records are used for post categorization and are selected in the create/edit workflow.
+
+## HomepageLayout model
+
+`HomepageLayout` is a singleton-style homepage configuration keyed by `primary`.
+It stores five optional ObjectId references to Post documents:
+
+- `leftTopPostId`
+- `leftBottomPostId`
+- `editorsPickPostId`
+- `rightTopPostId`
+- `rightBottomPostId`
+
+The model does not store ad configuration. Admin updates validate that non-null
+references point to distinct published posts that are not scheduled for the
+future. Public reads resolve invalid or unavailable references through
+eligible-post fallbacks. No homepage fields are added to Post or Category, and
+this configuration does not use a generic settings collection.
 
 ## Media model
 

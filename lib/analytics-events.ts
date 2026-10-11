@@ -48,7 +48,7 @@ function isDuplicateKeyError(error: unknown): boolean {
 export async function resolveAnalyticsPath(
   path: string,
 ): Promise<AnalyticsPath | null> {
-  if (path === "/blog") return { path };
+  if (path === "/" || path === "/blog") return { path };
 
   const categoryMatch = /^\/category\/([a-z0-9]+(?:-[a-z0-9]+)*)$/.exec(path);
   if (categoryMatch) {
