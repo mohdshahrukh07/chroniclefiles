@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Explore the latest stories, articles and insights on ChronicleFiles." />
+  <title>Technology Articles | ChronicleFiles</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: "#02A95C",
+            teal: "#608A89",
+            pale: "#E8F2F4",
+            paper: "#FEFEFE",
+            ink: "#444444"
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      background: #FEFEFE;
+      color: #444444;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .container-wide {
+      width: min(1400px, calc(100% - 48px));
+      margin-inline: auto;
+    }
+
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      z-index: 40;
+      top: calc(100% + 8px);
+      left: 0;
+      width: 210px;
+      padding: 8px;
+      background: white;
+      border: 1px solid #e5eae7;
+      border-radius: 6px;
+      box-shadow: 0 14px 35px rgba(0,0,0,.12);
+    }
+
+    .dropdown-menu.open { display: block; }
+
+    .dropdown-menu a {
+      display: block;
+      padding: 10px 12px;
+      border-radius: 4px;
+      color: #444;
+      font-size: 13px;
+    }
+
+    .dropdown-menu a:hover {
+      background: #E8F2F4;
+      color: #02A95C;
+    }
+
+    .mobile-menu { display: none; }
+    .mobile-menu.open { display: block; }
+
+    .mobile-menu > a,
+    .mobile-menu .mobile-cat-link {
+      display: block;
+      padding: 12px 0;
+      border-bottom: 1px solid #edf0ee;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .mobile-categories { display: none; padding-left: 14px; }
+    .mobile-categories.open { display: block; }
+
+    .story-card {
+      overflow: hidden;
+      border: 1px solid #e8ece9;
+      border-radius: 5px;
+      background: #fff;
+      transition: box-shadow .25s ease, transform .25s ease;
+    }
+
+    .story-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 28px rgba(20, 50, 35, .09);
+    }
+
+    .story-image {
+      position: relative;
+      display: block;
+      overflow: hidden;
+      aspect-ratio: 16 / 10;
+      background: #E8F2F4;
+    }
+
+    .story-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform .45s ease;
+    }
+
+    .story-card:hover .story-image img {
+      transform: scale(1.045);
+    }
+
+    .category-label {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 8px;
+      border-radius: 2px;
+      background: #E8F2F4;
+      color: #367064;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+    }
+
+    .story-title {
+      color: #292929;
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1.3;
+      letter-spacing: -.025em;
+    }
+
+    .story-title:hover { color: #02A95C; }
+
+    .story-excerpt {
+      color: #707a75;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .pagination-button {
+      display: inline-flex;
+      min-width: 40px;
+      height: 40px;
+      align-items: center;
+      justify-content: center;
+      padding: 0 12px;
+      border: 1px solid #e0e7e2;
+      border-radius: 4px;
+      background: white;
+      color: #444;
+      font-size: 13px;
+      font-weight: 700;
+      transition: .2s;
+    }
+
+    .pagination-button:hover:not(:disabled) {
+      border-color: #02A95C;
+      color: #02A95C;
+    }
+
+    .pagination-button.active {
+      border-color: #02A95C;
+      background: #02A95C;
+      color: white;
+    }
+
+    .pagination-button:disabled {
+      cursor: not-allowed;
+      opacity: .4;
+    }
+
+    .ad-vertical {
+      position: relative;
+      display: flex;
+      min-height: 300px;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 22px;
+      overflow: hidden;
+      border-radius: 5px;
+      background:
+        radial-gradient(circle at 80% 20%, rgba(255,255,255,.15), transparent 32%),
+        linear-gradient(145deg, #123f33, #02A95C);
+      color: white;
+    }
+
+    .ad-vertical::after {
+      content: "";
+      position: absolute;
+      right: -60px;
+      bottom: 18%;
+      width: 190px;
+      height: 190px;
+      border: 1px solid rgba(255,255,255,.25);
+      border-radius: 50%;
+      box-shadow: 0 0 0 20px rgba(255,255,255,.05);
+      pointer-events: none;
+    }
+
+    .ad-vertical > * { position: relative; z-index: 1; }
+
+    .ad-vertical h3 {
+      font-size: 28px;
+      line-height: 1.08;
+      font-weight: 900;
+      letter-spacing: -.04em;
+    }
+
+    .ad-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      opacity: .8;
+    }
+
+    .ad-cta {
+      display: inline-flex;
+      align-self: flex-start;
+      align-items: center;
+      justify-content: center;
+      padding: 9px 12px;
+      border-radius: 3px;
+      background: white;
+      color: #07583a;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .horizontal-ad {
+      position: relative;
+      display: flex;
+      min-height: 112px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 22px 28px;
+      overflow: hidden;
+      border-radius: 5px;
+      background: linear-gradient(110deg, #123f33, #08794a 65%, #02A95C);
+      color: white;
+    }
+
+    .horizontal-ad h3 {
+      margin-top: 6px;
+      font-size: clamp(18px, 2vw, 25px);
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .horizontal-ad p {
+      margin-top: 5px;
+      color: rgba(255,255,255,.82);
+      font-size: 12px;
+    }
+
+    .horizontal-ad > * { position: relative; z-index: 1; }
+
+    .horizontal-ad .ad-cta { flex-shrink: 0; }
+
+    .section-title {
+      padding-bottom: 14px;
+      border-bottom: 2px solid #02A95C;
+    }
+
+    .mini-story {
+      display: grid;
+      grid-template-columns: 90px minmax(0, 1fr);
+      gap: 12px;
+    }
+
+    .mini-story img {
+      width: 90px;
+      height: 75px;
+      object-fit: cover;
+      border-radius: 4px;
+      background: #E8F2F4;
+    }
+
+    .mini-story h4 {
+      color: #333;
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.4;
+    }
+
+    .mini-story h4:hover { color: #02A95C; }
+
+    .mini-story p {
+      margin-top: 6px;
+      color: #808983;
+      font-size: 10px;
+    }
+
+    .category-chip {
+      display: inline-flex;
+      padding: 9px 12px;
+      border-radius: 3px;
+      background: #E8F2F4;
+      color: #426b64;
+      font-size: 12px;
+      font-weight: 700;
+      transition: .2s;
+    }
+
+    .category-chip:hover {
+      background: #02A95C;
+      color: white;
+    }
+
+    .empty-state { display: none; }
+
+    @media (max-width: 1023px) {
+      .main-layout { grid-template-columns: minmax(0, 1fr) !important; }
+
+      .sidebar {
+        position: static !important;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: start;
+        gap: 20px;
+      }
+
+      .sidebar > * { min-width: 0; }
+    }
+
+    @media (max-width: 767px) {
+      .container-wide { width: calc(100% - 32px); }
+      .desktop-nav { display: none; }
+      .mobile-menu { display: none; }
+      .mobile-menu.open { display: block; }
+
+      .story-title { font-size: 16px; }
+
+      .story-excerpt { font-size: 12px; }
+
+      .horizontal-ad {
+        min-height: 110px;
+        padding: 17px;
+        gap: 10px;
+      }
+
+      .horizontal-ad h3 { font-size: 17px; }
+      .horizontal-ad p { font-size: 11px; }
+      .horizontal-ad .ad-cta { padding: 8px; }
+
+      .sidebar {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .ad-vertical { min-height: 240px; }
+
+      .pagination-button {
+        min-width: 34px;
+        height: 36px;
+        padding: 0 9px;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .container-wide { width: calc(100% - 24px); }
+      .story-grid { gap: 12px; }
+      .story-card-body { padding: 12px !important; }
+      .story-title { font-size: 15px; }
+      .pagination-button { min-width: 30px; padding: 0 7px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Header -->
+  <header class="sticky top-0 z-40 border-b border-gray-200 bg-white/95 backdrop-blur">
+    <div class="container-wide">
+      <div class="flex h-[76px] items-center justify-between gap-5">
+
+        <a href="index.html" class="shrink-0 text-[25px] font-black tracking-[-1.4px] text-[#222] sm:text-[29px]">
+          Chronicle<span class="text-brand">Files</span>
+        </a>
+
+        <nav class="desktop-nav flex items-center gap-7 text-[13px] font-bold text-gray-700">
+          <a href="index.html" class="transition hover:text-brand">Home</a>
+          <a href="category.html?category=News" class="transition hover:text-brand">News</a>
+          <a href="category.html?category=Technology" class="transition hover:text-brand">Technology</a>
+
+          <div class="relative" id="categoriesDropdown">
+            <button id="categoriesButton" class="flex items-center gap-1 py-3 hover:text-brand"
+              aria-expanded="false" aria-controls="categoriesMenu">
+              Categories <span aria-hidden="true">⌄</span>
+            </button>
+
+            <div class="dropdown-menu" id="categoriesMenu">
+              <a href="category.html?category=Technology">Technology</a>
+              <a href="category.html?category=Education">Education</a>
+              <a href="category.html?category=Entertainment">Entertainment</a>
+              <a href="category.html?category=News">News</a>
+            </div>
+          </div>
+        </nav>
+
+        <div class="flex items-center gap-2">
+          <button id="headerSearchButton" aria-label="Go to article search"
+            class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-lg hover:bg-pale">
+            ⌕
+          </button>
+
+          <button id="mobileMenuButton" aria-label="Toggle navigation" aria-expanded="false"
+            aria-controls="mobileMenu"
+            class="flex h-10 w-10 items-center justify-center rounded-md border border-gray-200 text-xl md:hidden">
+            ☰
+          </button>
+        </div>
+      </div>
+
+      <nav id="mobileMenu" class="mobile-menu pb-3 md:hidden">
+        <a href="index.html">Home</a>
+        <a href="category.html?category=News">News</a>
+        <a href="category.html?category=Technology">Technology</a>
+        <button id="mobileCategoriesButton" aria-expanded="false" aria-controls="mobileCategories"
+          class="flex w-full items-center justify-between py-3 text-left text-sm font-bold">
+          Categories <span>⌄</span>
+        </button>
+        <div id="mobileCategories" class="mobile-categories">
+          <a class="mobile-cat-link" href="category.html?category=Education">Education</a>
+          <a class="mobile-cat-link" href="category.html?category=Entertainment">Entertainment</a>
+          <a class="mobile-cat-link" href="category.html?category=News">News</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container-wide">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="Breadcrumb" class="flex items-center gap-2 pt-6 text-xs text-gray-500">
+      <a href="index.html" class="hover:text-brand">Home</a>
+      <span>/</span>
+      <span id="breadcrumbCategory" class="font-semibold text-brand">Technology</span>
+    </nav>
+
+    <!-- Category title + description -->
+    <section class="mt-5 flex flex-col justify-between gap-5 border-b border-gray-200 pb-7 md:flex-row md:items-end">
+      <div class="max-w-2xl">
+        <p class="mb-3 text-[10px] font-extrabold uppercase tracking-[.2em] text-brand">
+          Explore the latest
+        </p>
+        <h1 id="categoryTitle" class="text-3xl font-black tracking-[-1.3px] text-[#242424] sm:text-4xl">
+          Technology
+        </h1>
+        <p id="categoryDescription" class="mt-3 max-w-xl text-sm leading-6 text-gray-500">
+          Explore technology news, artificial intelligence, digital innovation and the ideas shaping our future.
+        </p>
+      </div>
+
+      <div class="shrink-0 text-xs text-gray-500">
+        Showing <strong id="resultCount" class="text-gray-800">12</strong> sample articles
+      </div>
+    </section>
+
+    <!-- Category navigation -->
+    <nav aria-label="Article categories" class="flex flex-wrap gap-2 py-5">
+      <a href="category.html?category=Technology" data-category-link="Technology" class="category-chip">Technology</a>
+      <a href="category.html?category=Education" data-category-link="Education" class="category-chip">Education</a>
+      <a href="category.html?category=News" data-category-link="News" class="category-chip">News</a>
+      <a href="category.html?category=Entertainment" data-category-link="Entertainment" class="category-chip">Entertainment</a>
+    </nav>
+
+    <!-- Horizontal advertisement -->
+    <section class="mb-8" aria-label="Advertisement">
+      <div class="horizontal-ad">
+        <div>
+          <div class="ad-label">Advertisement · Sponsored</div>
+          <h3>Fresh ideas for curious minds.</h3>
+          <p>Discover tools and resources to support your next big idea.</p>
+        </div>
+        <a href="#sponsored" class="ad-cta">Explore More ↗</a>
+      </div>
+    </section>
+
+    <!-- Main content and left vertical ad sidebar -->
+    <div class="main-layout grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">
+
+      <!-- Article listing -->
+      <section class="min-w-0" aria-labelledby="articleListHeading">
+
+        <div class="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+          <div>
+            <h2 id="articleListHeading" class="text-xl font-black tracking-tight text-[#292929]">
+              Latest Articles
+            </h2>
+            <p class="mt-1 text-xs text-gray-500">Ideas, updates and stories worth your time.</p>
+          </div>
+
+          <!-- Search -->
+          <form id="articleSearchForm" role="search" class="flex w-full sm:w-[310px]">
+            <label for="articleSearch" class="sr-only">Search articles in this category</label>
+            <input
+              id="articleSearch"
+              type="search"
+              placeholder="Search articles..."
+              class="min-w-0 flex-1 rounded-l border border-gray-200 px-3 py-3 text-xs outline-none focus:border-brand"
+            />
+            <button type="submit" aria-label="Search articles"
+              class="rounded-r bg-brand px-4 text-sm font-bold text-white transition hover:bg-green-700">
+              Search
+            </button>
+          </form>
+        </div>
+
+        <!-- Article cards are populated by JavaScript for the demo -->
+        <div id="articleGrid" class="story-grid grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3"></div>
+
+        <div id="emptyState" class="empty-state rounded border border-gray-200 px-5 py-12 text-center">
+          <div class="text-3xl">⌕</div>
+          <h3 class="mt-3 text-lg font-black text-gray-800">No articles found</h3>
+          <p class="mt-2 text-sm text-gray-500">Try another search term or clear your search.</p>
+          <button id="clearSearchButton" class="mt-5 rounded bg-brand px-4 py-2 text-xs font-bold text-white">
+            Clear Search
+          </button>
+        </div>
+
+        <!-- Pagination -->
+        <nav aria-label="Article pagination" class="mt-10 border-t border-gray-200 pt-6">
+          <div class="flex flex-wrap items-center justify-center gap-2" id="pagination">
+            <!-- Generated by JavaScript -->
+          </div>
+          <p id="paginationStatus" aria-live="polite" class="mt-4 text-center text-xs text-gray-500">
+            Page 1 of 4
+          </p>
+        </nav>
+
+      </section>
+
+      <!-- LEFT VERTICAL AD SIDEBAR ON DESKTOP -->
+      <aside class="sidebar space-y-7 lg:sticky lg:top-24" aria-label="Advertisements and recommendations">
+
+        <!-- Vertical ad 1 -->
+        <section class="ad-vertical" aria-label="Advertisement">
+          <div class="ad-label">Advertisement</div>
+          <div>
+            <p class="mb-3 text-[10px] font-bold uppercase tracking-[.15em] text-white/75">
+              Think bigger
+            </p>
+            <h3>Ideas can take you anywhere.</h3>
+            <p>Discover new tools and possibilities for your next project.</p>
+          </div>
+          <a href="#sponsored" class="ad-cta">Discover More ↗</a>
+        </section>
+
+        <!-- Recommended stories -->
+        <section>
+          <div class="section-title mb-5">
+            <h2 class="text-xl font-black tracking-tight text-[#292929]">Recommended</h2>
+          </div>
+
+          <div class="space-y-5">
+            <a href="#" class="mini-story">
+              <img src="https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=220&q=80"
+                alt="Artificial intelligence" loading="lazy" />
+              <div>
+                <h4>How Artificial Intelligence Is Changing the Way We Learn</h4>
+                <p>Technology · 8 min read</p>
+              </div>
+            </a>
+
+            <a href="#" class="mini-story">
+              <img src="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=220&q=80"
+                alt="Books and learning" loading="lazy" />
+              <div>
+                <h4>Simple Habits That Make Learning More Effective</h4>
+                <p>Education · 5 min read</p>
+              </div>
+            </a>
+
+            <a href="#" class="mini-story">
+              <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=220&q=80"
+                alt="Team collaborating" loading="lazy" />
+              <div>
+                <h4>Ideas That Help Teams Work Smarter</h4>
+                <p>Work & Life · 6 min read</p>
+              </div>
+            </a>
+          </div>
+        </section>
+
+        <!-- Vertical ad 2 -->
+        <section class="ad-vertical" aria-label="Advertisement">
+          <div class="ad-label">Sponsored</div>
+          <div>
+            <h3>Your next chapter starts with curiosity.</h3>
+            <p>Explore fresh perspectives and make room for new ideas.</p>
+          </div>
+          <a href="#sponsored" class="ad-cta">Learn More ↗</a>
+        </section>
+
+        <!-- Categories -->
+        <section>
+          <div class="section-title mb-4">
+            <h2 class="text-xl font-black tracking-tight text-[#292929]">Explore Categories</h2>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <a class="category-chip" href="category.html?category=Technology">Technology</a>
+            <a class="category-chip" href="category.html?category=Education">Education</a>
+            <a class="category-chip" href="category.html?category=News">News</a>
+            <a class="category-chip" href="category.html?category=Entertainment">Entertainment</a>
+          </div>
+        </section>
+
+      </aside>
+    </div>
+
+    <!-- Bottom advertisement -->
+    <section class="mt-12" aria-label="Advertisement">
+      <div class="horizontal-ad">
+        <div>
+          <div class="ad-label">Advertisement</div>
+          <h3>Keep exploring. Keep discovering.</h3>
+          <p>Find more ideas and stories to inspire your day.</p>
+        </div>
+        <a href="#sponsored" class="ad-cta">Learn More ↗</a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="mt-12 bg-[#202b28] text-white">
+    <div class="container-wide py-10">
+      <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        <div>
+          <a href="index.html" class="text-3xl font-black tracking-[-1.5px]">
+            Chronicle<span class="text-brand">Files</span>
+          </a>
+          <p class="mt-4 max-w-sm text-sm leading-6 text-gray-300">
+            Stories, ideas and knowledge for curious minds.
+          </p>
+        </div>
+
+        <div>
+          <h3 class="font-bold">Explore</h3>
+          <div class="mt-4 space-y-3 text-sm text-gray-300">
+            <a class="block hover:text-white" href="index.html">Home</a>
+            <a class="block hover:text-white" href="category.html?category=News">News</a>
+            <a class="block hover:text-white" href="category.html?category=Technology">Technology</a>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="font-bold">Categories</h3>
+          <div class="mt-4 space-y-3 text-sm text-gray-300">
+            <a class="block hover:text-white" href="category.html?category=Education">Education</a>
+            <a class="block hover:text-white" href="category.html?category=Entertainment">Entertainment</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-8 flex flex-wrap justify-between gap-3 border-t border-white/15 pt-5 text-xs text-gray-400">
+        <p>© <span id="currentYear"></span> ChronicleFiles. All rights reserved.</p>
+        <p>Stories · Ideas · Knowledge</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    /*
+      CATEGORY PAGE DEMO
+      - Change the category using ?category=Technology, Education, News, Entertainment
+      - Search filters the current demo article list.
+      - Pagination works with this local demo dataset.
+      - For production, replace demoArticles with published posts from your database/API.
+    */
+
+    const categoryDescriptions = {
+      Technology: "Explore technology news, artificial intelligence, digital innovation and the ideas shaping our future.",
+      Education: "Discover learning techniques, education updates, study advice and ideas to help you grow.",
+      News: "Catch up on noteworthy developments, explainers and stories from around the world.",
+      Entertainment: "Explore movies, music, culture and the stories shaping entertainment."
+    };
+
+    const imageUrls = {
+      ai: "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=800&q=85",
+      circuit: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=85",
+      space: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=85",
+      team: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=800&q=85",
+      laptop: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=800&q=85",
+      student: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=800&q=85",
+      books: "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=800&q=85",
+      study: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=800&q=85",
+      classroom: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=85",
+      movie: "https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=800&q=85",
+      music: "https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=800&q=85",
+      concert: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=800&q=85",
+      writing: "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=800&q=85",
+      planet: "https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?auto=format&fit=crop&w=800&q=85"
+    };
+
+    const demoArticles = [
+      {
+        title: "How Artificial Intelligence Is Changing the Way We Learn",
+        category: "Technology",
+        excerpt: "Discover how AI is transforming education, learning habits and access to knowledge.",
+        image: imageUrls.ai,
+        date: "Oct 08, 2026",
+        readTime: "8 min read"
+      },
+      {
+        title: "The Technology Trends Worth Watching This Year",
+        category: "Technology",
+        excerpt: "A closer look at the emerging digital tools changing how people work and live.",
+        image: imageUrls.circuit,
+        date: "Oct 07, 2026",
+        readTime: "6 min read"
+      },
+      {
+        title: "How Digital Collaboration Is Changing Modern Work",
+        category: "Technology",
+        excerpt: "Explore how connected teams are sharing ideas and building better products.",
+        image: imageUrls.team,
+        date: "Oct 06, 2026",
+        readTime: "5 min read"
+      },
+      {
+        title: "Understanding the Next Generation of Smart Devices",
+        category: "Technology",
+        excerpt: "Connected devices are changing everyday routines in subtle and surprising ways.",
+        image: imageUrls.laptop,
+        date: "Oct 05, 2026",
+        readTime: "7 min read"
+      },
+      {
+        title: "What Space Technology Can Teach Us About Earth",
+        category: "Technology",
+        excerpt: "New perspectives from space are helping scientists understand our planet.",
+        image: imageUrls.space,
+        date: "Oct 04, 2026",
+        readTime: "6 min read"
+      },
+      {
+        title: "Building Better Digital Habits in a Busy World",
+        category: "Technology",
+        excerpt: "Practical ways to use technology more thoughtfully and protect your focus.",
+        image: imageUrls.planet,
+        date: "Oct 03, 2026",
+        readTime: "4 min read"
+      },
+      {
+        title: "Simple Study Techniques That Actually Help",
+        category: "Education",
+        excerpt: "Build a practical learning routine with small habits you can maintain.",
+        image: imageUrls.student,
+        date: "Oct 08, 2026",
+        readTime: "5 min read"
+      },
+      {
+        title: "Why Reading Remains a Powerful Learning Tool",
+        category: "Education",
+        excerpt: "Books and thoughtful reading can help expand knowledge and perspective.",
+        image: imageUrls.books,
+        date: "Oct 07, 2026",
+        readTime: "4 min read"
+      },
+      {
+        title: "How to Make Your Study Sessions More Effective",
+        category: "Education",
+        excerpt: "Use planning, short breaks and clear goals to improve your study sessions.",
+        image: imageUrls.study,
+        date: "Oct 06, 2026",
+        readTime: "6 min read"
+      },
+      {
+        title: "Learning Together: The Value of Collaboration",
+        category: "Education",
+        excerpt: "Working with others can expose you to new ways of solving problems.",
+        image: imageUrls.classroom,
+        date: "Oct 05, 2026",
+        readTime: "5 min read"
+      },
+      {
+        title: "How to Stay Curious Throughout Your Life",
+        category: "Education",
+        excerpt: "Make continuous learning part of your routine, one question at a time.",
+        image: imageUrls.writing,
+        date: "Oct 04, 2026",
+        readTime: "4 min read"
+      },
+      {
+        title: "Digital Learning Resources for Independent Learners",
+        category: "Education",
+        excerpt: "Explore ways to organise your learning and make better use of online resources.",
+        image: imageUrls.laptop,
+        date: "Oct 03, 2026",
+        readTime: "7 min read"
+      },
+      {
+        title: "The Stories Behind Today's Biggest Developments",
+        category: "News",
+        excerpt: "A useful overview of events, context and the questions worth asking.",
+        image: imageUrls.planet,
+        date: "Oct 08, 2026",
+        readTime: "5 min read"
+      },
+      {
+        title: "How Technology Is Affecting Communities",
+        category: "News",
+        excerpt: "Understand the ways digital changes can affect work, education and daily life.",
+        image: imageUrls.team,
+        date: "Oct 07, 2026",
+        readTime: "6 min read"
+      },
+      {
+        title: "The Science Behind a Changing World",
+        category: "News",
+        excerpt: "Explore research and discoveries that help explain the world around us.",
+        image: imageUrls.space,
+        date: "Oct 06, 2026",
+        readTime: "7 min read"
+      },
+      {
+        title: "How Films Turn Ideas Into Memorable Stories",
+        category: "Entertainment",
+        excerpt: "Explore the creative choices behind compelling visual storytelling.",
+        image: imageUrls.movie,
+        date: "Oct 08, 2026",
+        readTime: "5 min read"
+      },
+      {
+        title: "Why Live Music Creates Lasting Memories",
+        category: "Entertainment",
+        excerpt: "The atmosphere, performers and audience all help shape a live experience.",
+        image: imageUrls.music,
+        date: "Oct 07, 2026",
+        readTime: "4 min read"
+      },
+      {
+        title: "The Culture and Creativity Behind Live Events",
+        category: "Entertainment",
+        excerpt: "Discover how performances bring people together through shared experiences.",
+        image: imageUrls.concert,
+        date: "Oct 06, 2026",
+        readTime: "6 min read"
+      },
+      {
+        title: "The Art of Telling Stories Through Images",
+        category: "Entertainment",
+        excerpt: "Visual details can turn a simple idea into a story people remember.",
+        image: imageUrls.writing,
+        date: "Oct 05, 2026",
+        readTime: "5 min read"
+      }
+    ];
+
+    const params = new URLSearchParams(window.location.search);
+    const requestedCategory = params.get("category") || "Technology";
+    const validCategories = ["Technology", "Education", "News", "Entertainment"];
+
+    const currentCategory = validCategories.find(
+      category => category.toLowerCase() === requestedCategory.toLowerCase()
+    ) || "Technology";
+
+    const categoryTitle = document.getElementById("categoryTitle");
+    const categoryDescription = document.getElementById("categoryDescription");
+    const breadcrumbCategory = document.getElementById("breadcrumbCategory");
+    const articleListHeading = document.getElementById("articleListHeading");
+    const articleGrid = document.getElementById("articleGrid");
+    const articleSearch = document.getElementById("articleSearch");
+    const resultCount = document.getElementById("resultCount");
+    const pagination = document.getElementById("pagination");
+    const paginationStatus = document.getElementById("paginationStatus");
+    const emptyState = document.getElementById("emptyState");
+    const clearSearchButton = document.getElementById("clearSearchButton");
+
+    const pageSize = 9;
+    let currentPage = 1;
+    let filteredArticles = [];
+
+    categoryTitle.textContent = currentCategory;
+    breadcrumbCategory.textContent = currentCategory;
+    categoryDescription.textContent = categoryDescriptions[currentCategory];
+    articleListHeading.textContent = currentCategory + " Articles";
+    document.title = currentCategory + " Articles | ChronicleFiles";
+
+    document.querySelectorAll("[data-category-link]").forEach(link => {
+      if (link.dataset.categoryLink === currentCategory) {
+        link.style.background = "#02A95C";
+        link.style.color = "#fff";
+        link.setAttribute("aria-current", "page");
+      }
+    });
+
+    function getFilteredArticles() {
+      const searchTerm = articleSearch.value.trim().toLowerCase();
+
+      return demoArticles.filter(article => {
+        const matchesCategory = article.category === currentCategory;
+        const searchableText = [
+          article.title,
+          article.excerpt,
+          article.category
+        ].join(" ").toLowerCase();
+
+        return matchesCategory && searchableText.includes(searchTerm);
+      });
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, character => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      })[character]);
+    }
+
+    function renderArticles() {
+      filteredArticles = getFilteredArticles();
+
+      const totalPages = Math.max(1, Math.ceil(filteredArticles.length / pageSize));
+
+      if (currentPage > totalPages) currentPage = totalPages;
+
+      const startIndex = (currentPage - 1) * pageSize;
+      const visibleArticles = filteredArticles.slice(startIndex, startIndex + pageSize);
+
+      resultCount.textContent = filteredArticles.length;
+
+      articleGrid.innerHTML = visibleArticles.map(article => `
+        <article class="story-card">
+          <a class="story-image" href="#" aria-label="${escapeHtml(article.title)}">
+            <img
+              src="${escapeHtml(article.image)}"
+              alt="${escapeHtml(article.title)}"
+              loading="lazy"
+            />
+          </a>
+
+          <div class="story-card-body p-4">
+            <div class="mb-3 flex flex-wrap items-center gap-2">
+              <span class="category-label">${escapeHtml(article.category)}</span>
+              <span class="text-[10px] text-gray-400">${escapeHtml(article.date)}</span>
+            </div>
+
+            <h3 class="story-title">
+              <a href="#">${escapeHtml(article.title)}</a>
+            </h3>
+
+            <p class="story-excerpt mt-3">
+              ${escapeHtml(article.excerpt)}
+            </p>
+
+            <div class="mt-5 flex items-center justify-between border-t border-gray-100 pt-3">
+              <span class="text-[10px] text-gray-500">${escapeHtml(article.readTime)}</span>
+              <a href="#" class="text-xs font-extrabold text-brand hover:text-green-800">
+                Read Article ↗
+              </a>
+            </div>
+          </div>
+        </article>
+      `).join("");
+
+      emptyState.style.display = visibleArticles.length ? "none" : "block";
+      articleGrid.style.display = visibleArticles.length ? "grid" : "none";
+
+      renderPagination(totalPages);
+
+      articleGrid.querySelectorAll("img").forEach(img => {
+        img.addEventListener("error", () => {
+          img.style.visibility = "hidden";
+          img.parentElement.style.background = "linear-gradient(135deg,#E8F2F4,#608A89)";
+        });
+      });
+    }
+
+    function createPageButton(label, page, active = false, disabled = false, ariaLabel = "") {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "pagination-button" + (active ? " active" : "");
+      button.textContent = label;
+      button.disabled = disabled;
+
+      if (ariaLabel) button.setAttribute("aria-label", ariaLabel);
+      if (active) button.setAttribute("aria-current", "page");
+
+      button.addEventListener("click", () => {
+        if (disabled || page === currentPage) return;
+        currentPage = page;
+        renderArticles();
+        document.getElementById("articleListHeading").scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+      });
+
+      return button;
+    }
+
+    function renderPagination(totalPages) {
+      pagination.innerHTML = "";
+
+      pagination.appendChild(
+        createPageButton("←", currentPage - 1, false, currentPage === 1, "Previous page")
+      );
+
+      // Keep the pagination compact for large result sets.
+      const pagesToShow = new Set([1, totalPages, currentPage - 1, currentPage, currentPage + 1]);
+      const sortedPages = [...pagesToShow]
+        .filter(page => page >= 1 && page <= totalPages)
+        .sort((a, b) => a - b);
+
+      let previousPage = 0;
+
+      sortedPages.forEach(page => {
+        if (previousPage && page - previousPage > 1) {
+          const dots = document.createElement("span");
+          dots.className = "px-1 text-sm text-gray-400";
+          dots.textContent = "…";
+          pagination.appendChild(dots);
+        }
+
+        pagination.appendChild(
+          createPageButton(String(page), page, page === currentPage, false, "Page " + page)
+        );
+
+        previousPage = page;
+      });
+
+      pagination.appendChild(
+        createPageButton("→", currentPage + 1, false, currentPage === totalPages, "Next page")
+      );
+
+      paginationStatus.textContent =
+        filteredArticles.length === 0
+          ? "No matching articles"
+          : `Page ${currentPage} of ${totalPages} · ${filteredArticles.length} articles`;
+    }
+
+    document.getElementById("articleSearchForm").addEventListener("submit", event => {
+      event.preventDefault();
+      currentPage = 1;
+      renderArticles();
+    });
+
+    articleSearch.addEventListener("input", () => {
+      currentPage = 1;
+      renderArticles();
+    });
+
+    clearSearchButton.addEventListener("click", () => {
+      articleSearch.value = "";
+      currentPage = 1;
+      renderArticles();
+      articleSearch.focus();
+    });
+
+    // Header search takes the user to the category search field.
+    document.getElementById("headerSearchButton").addEventListener("click", () => {
+      articleSearch.focus();
+      articleSearch.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+
+    // Desktop categories dropdown
+    const categoriesDropdown = document.getElementById("categoriesDropdown");
+    const categoriesButton = document.getElementById("categoriesButton");
+    const categoriesMenu = document.getElementById("categoriesMenu");
+
+    function closeDesktopDropdown() {
+      categoriesMenu.classList.remove("open");
+      categoriesButton.setAttribute("aria-expanded", "false");
+    }
+
+    categoriesButton.addEventListener("click", event => {
+      event.stopPropagation();
+      const open = categoriesMenu.classList.toggle("open");
+      categoriesButton.setAttribute("aria-expanded", String(open));
+    });
+
+    document.addEventListener("click", event => {
+      if (!categoriesDropdown.contains(event.target)) closeDesktopDropdown();
+    });
+
+    categoriesMenu.querySelectorAll("a").forEach(link => {
+      link.addEventListener("click", closeDesktopDropdown);
+    });
+
+    // Mobile navigation
+    const mobileMenuButton = document.getElementById("mobileMenuButton");
+    const mobileMenu = document.getElementById("mobileMenu");
+    const mobileCategoriesButton = document.getElementById("mobileCategoriesButton");
+    const mobileCategories = document.getElementById("mobileCategories");
+
+    mobileMenuButton.addEventListener("click", () => {
+      const open = mobileMenu.classList.toggle("open");
+      mobileMenuButton.setAttribute("aria-expanded", String(open));
+    });
+
+    mobileCategoriesButton.addEventListener("click", () => {
+      const open = mobileCategories.classList.toggle("open");
+      mobileCategoriesButton.setAttribute("aria-expanded", String(open));
+    });
+
+    mobileMenu.querySelectorAll("a").forEach(link => {
+      link.addEventListener("click", () => {
+        mobileMenu.classList.remove("open");
+        mobileMenuButton.setAttribute("aria-expanded", "false");
+      });
+    });
+
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape") {
+        closeDesktopDropdown();
+        mobileMenu.classList.remove("open");
+        mobileMenuButton.setAttribute("aria-expanded", "false");
+      }
+    });
+
+    document.getElementById("currentYear").textContent = new Date().getFullYear();
+
+    // First render
+    renderArticles();
+  </script>
+
+</body>
+</html>

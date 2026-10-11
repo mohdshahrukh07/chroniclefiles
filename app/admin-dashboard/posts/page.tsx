@@ -47,7 +47,8 @@ export default async function PostsPage({ searchParams }: PostsPageProps) {
     params.notice === "draft-saved" ||
     params.notice === "draft-updated" ||
     params.notice === "post-published" ||
-    params.notice === "post-updated"
+    params.notice === "post-updated" ||
+    params.notice === "post-deleted"
       ? params.notice
       : undefined;
   let page = Number.isSafeInteger(requestedPage) && requestedPage > 0

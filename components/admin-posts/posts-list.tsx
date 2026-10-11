@@ -1,5 +1,10 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
-import { Plus, Search } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Eye, Plus, Search } from "lucide-react";
+import { deletePostAction } from "@/app/admin-dashboard/posts/new/actions";
 import { AdminSidebar } from "@/components/admin-dashboard/admin-navigation";
 import { MobileAdminNavigation } from "@/components/admin-dashboard/mobile-admin-navigation";
 import { StatusBadge } from "@/components/admin-dashboard/status-badge";
@@ -30,7 +35,7 @@ interface PostsListProps {
   totalPages: number;
   totalPosts: number;
   loadError?: string;
-  notice?: "draft-saved" | "draft-updated" | "post-published" | "post-updated";
+  notice?: "draft-saved" | "draft-updated" | "post-published" | "post-updated" | "post-deleted";
 }
 
 function formatDate(value: string) {
@@ -50,14 +55,51 @@ export function PostsList({
   loadError,
   notice,
 }: PostsListProps) {
+  const router = useRouter();
+  const [selectedPost, setSelectedPost] = useState<PostRow | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const successMessage = notice
     ? {
         "draft-saved": "Draft saved successfully.",
         "draft-updated": "Draft updated successfully.",
         "post-published": "Post published successfully.",
         "post-updated": "Post updated and published successfully.",
+        "post-deleted": "Post deleted successfully.",
       }[notice]
     : undefined;
+
+  async function handleDeleteConfirm() {
+    if (!selectedPost || isDeleting) {
+      return;
+    }
+
+    setIsDeleting(true);
+    setDeleteError(null);
+
+    const result = await deletePostAction(selectedPost.id);
+
+    if (!result.success) {
+      setDeleteError(result.message);
+      setIsDeleting(false);
+      return;
+    }
+
+    setDeleteDialogOpen(false);
+    setSelectedPost(null);
+    setIsDeleting(false);
+    router.push("/admin-dashboard/posts?notice=post-deleted");
+    router.refresh();
+  }
+
+  function handleDeleteCancel() {
+    setDeleteDialogOpen(false);
+    setSelectedPost(null);
+    setDeleteError(null);
+    setIsDeleting(false);
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 text-[#444444]">
@@ -230,12 +272,34 @@ export function PostsList({
                           </time>
                         </td>
                         <td className="px-5 py-4 text-right">
-                          <Link
-                            href={`/admin-dashboard/posts/${post.id}/edit`}
-                            className={outlineLinkClass}
-                          >
-                            Edit
-                          </Link>
+                          <div className="flex justify-end gap-2">
+                            <Link
+                              href={`/admin-dashboard/posts/${post.id}/edit`}
+                              className={outlineLinkClass}
+                            >
+                              Edit
+                            </Link>
+                            <Link
+                              href={`/admin-dashboard/posts/${post.id}/preview`}
+                              className={outlineLinkClass}
+                              aria-label={`Preview ${post.title}`}
+                            >
+                              <Eye aria-hidden="true" className="mr-2 size-4" />
+                              Preview
+                            </Link>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="min-h-11 rounded-lg border-red-600 bg-red-600 text-white hover:border-red-700 hover:bg-red-700 focus-visible:border-red-700 focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2"
+                              onClick={() => {
+                                setDeleteError(null);
+                                setSelectedPost(post);
+                                setDeleteDialogOpen(true);
+                              }}
+                            >
+                              Delete
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -269,6 +333,47 @@ export function PostsList({
           )}
         </div>
       </main>
+
+      {deleteDialogOpen && selectedPost && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
+          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-xl">
+            <h2 className="text-xl font-bold text-slate-900">Delete Post?</h2>
+            <p className="mt-3 text-sm text-slate-600">
+              Are you sure you want to delete this post?
+            </p>
+            <p className="mt-2 text-sm text-slate-500">
+              This action cannot be undone.
+            </p>
+
+            {deleteError && (
+              <p className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                {deleteError}
+              </p>
+            )}
+
+            <div className="mt-6 flex justify-end gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                className="min-h-11 rounded-lg border-slate-300"
+                onClick={handleDeleteCancel}
+                disabled={isDeleting}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                className="min-h-11 rounded-lg"
+                onClick={handleDeleteConfirm}
+                disabled={isDeleting}
+              >
+                {isDeleting ? "Deleting..." : "Delete"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

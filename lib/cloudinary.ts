@@ -7,6 +7,10 @@ export const cloudinaryUploadTargets = {
     resourceType: "image",
     folder: "chroniclefiles/images/thumbnails",
   },
+  categoryImage: {
+    resourceType: "image",
+    folder: "chroniclefiles/images/categories",
+  },
   postVideo: {
     resourceType: "video",
     folder: "chroniclefiles/videos/posts",

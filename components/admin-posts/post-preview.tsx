@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
+import { Fragment, useEffect, type ReactNode } from "react";
 import Image from "next/image";
 import type { JSONContent } from "@tiptap/core";
 import { X } from "lucide-react";
@@ -112,6 +112,22 @@ function PreviewNode({
   }
 }
 
+function PreviewAdStripe() {
+  return (
+    <aside
+      aria-label="Advertisement placement preview"
+      className="my-10 flex min-h-24 items-center justify-center rounded-xl border border-green-100 bg-gradient-to-r from-[#027a49] via-[#02a95c] to-[#608a89] px-5 py-5 text-center text-white shadow-sm sm:my-12 sm:min-h-28 sm:px-8"
+    >
+      <div>
+        <p className="text-xs font-bold uppercase tracking-[0.2em]">Advertisement</p>
+        <p className="mt-2 text-sm font-medium text-white/90">
+          Reserved placement - preview only
+        </p>
+      </div>
+    </aside>
+  );
+}
+
 export function PostPreview({
   open,
   onClose,
@@ -149,7 +165,7 @@ export function PostPreview({
                 Article Preview
               </p>
               <p id="post-preview-title" className="text-sm text-slate-500">
-                Preview before publishing
+                Preview as it will appear on ChronicleFiles
               </p>
             </div>
             <button
@@ -187,80 +203,96 @@ export function PostPreview({
             <div className="[&_a]:break-words">
               {blocks.map((block, index) => {
                 const key = `preview-${index}`;
-                if (block.type === "richText") {
-                  return (
-                    <PreviewNode
-                      key={key}
-                      node={block.content as JSONContent}
-                      nodeKey={key}
-                    />
-                  );
-                }
-                if (block.type === "embed") {
-                  return <PostEmbedRenderer key={key} embed={block} />;
-                }
-                if (block.type === "image") {
-                  const src = safeHref(block.url);
-                  return src ? (
-                    <figure key={key} className="my-6">
-                      <Image
-                        unoptimized
-                        src={src}
-                        alt={block.alt ?? ""}
-                        width={1200}
-                        height={800}
-                        className="mx-auto max-h-[36rem] w-full rounded-xl object-contain"
+                const content = (() => {
+                  if (block.type === "richText") {
+                    return (
+                      <PreviewNode
+                        node={block.content as JSONContent}
+                        nodeKey={key}
                       />
-                    </figure>
-                  ) : null;
-                }
-                if (block.type === "heading2") {
-                  return (
-                    <h2 key={key} className="mb-4 mt-8 font-serif text-2xl font-bold text-slate-900">
-                      {block.text}
-                    </h2>
-                  );
-                }
-                if (block.type === "heading3") {
-                  return (
-                    <h3 key={key} className="mb-3 mt-6 font-serif text-xl font-bold text-slate-900">
-                      {block.text}
-                    </h3>
-                  );
-                }
-                if (block.type === "quote") {
-                  return (
-                    <blockquote key={key} className="my-6 border-l-4 border-[#02a95c] bg-green-50 px-5 py-4 italic text-slate-700">
-                      {block.text}
-                    </blockquote>
-                  );
-                }
-                if (block.type === "bullet" || block.type === "numbered") {
-                  const List = block.type === "bullet" ? "ul" : "ol";
-                  return (
-                    <List
-                      key={key}
-                      className={`mb-5 ml-6 space-y-2 text-slate-700 ${
-                        block.type === "bullet" ? "list-disc" : "list-decimal"
-                      }`}
-                    >
-                      {block.text.split(/\r?\n/).filter((line) => line.trim()).map((line, itemIndex) => (
-                        <li key={`${key}-${itemIndex}`}>{line}</li>
-                      ))}
-                    </List>
-                  );
-                }
-                if (block.type === "link") {
-                  const href = safeHref(block.url);
-                  return href ? (
-                    <p key={key} className="my-5 text-base leading-8">
-                      <a href={href} rel="noreferrer" className="text-[#02a95c] underline underline-offset-2">
+                    );
+                  }
+                  if (block.type === "embed") {
+                    return <PostEmbedRenderer embed={block} />;
+                  }
+                  if (block.type === "image") {
+                    const src = safeHref(block.url);
+                    return src ? (
+                      <figure className="my-6">
+                        <Image
+                          unoptimized
+                          src={src}
+                          alt={block.alt ?? ""}
+                          width={1200}
+                          height={800}
+                          className="mx-auto max-h-[36rem] w-full rounded-xl object-contain"
+                        />
+                      </figure>
+                    ) : null;
+                  }
+                  if (block.type === "heading2") {
+                    return (
+                      <h2 className="mb-4 mt-8 font-serif text-2xl font-bold text-slate-900">
                         {block.text}
-                      </a>
-                    </p>
-                  ) : null;
-                }
-                return <hr key={key} className="my-8 border-slate-200" />;
+                      </h2>
+                    );
+                  }
+                  if (block.type === "heading3") {
+                    return (
+                      <h3 className="mb-3 mt-6 font-serif text-xl font-bold text-slate-900">
+                        {block.text}
+                      </h3>
+                    );
+                  }
+                  if (block.type === "quote") {
+                    return (
+                      <blockquote className="my-6 border-l-4 border-[#02a95c] bg-green-50 px-5 py-4 italic text-slate-700">
+                        {block.text}
+                      </blockquote>
+                    );
+                  }
+                  if (block.type === "bullet" || block.type === "numbered") {
+                    const List = block.type === "bullet" ? "ul" : "ol";
+                    return (
+                      <List
+                        className={`mb-5 ml-6 space-y-2 text-slate-700 ${
+                          block.type === "bullet" ? "list-disc" : "list-decimal"
+                        }`}
+                      >
+                        {block.text
+                          .split(/\r?\n/)
+                          .filter((line) => line.trim())
+                          .map((line, itemIndex) => (
+                            <li key={`${key}-${itemIndex}`}>{line}</li>
+                          ))}
+                      </List>
+                    );
+                  }
+                  if (block.type === "link") {
+                    const href = safeHref(block.url);
+                    return href ? (
+                      <p className="my-5 text-base leading-8">
+                        <a
+                          href={href}
+                          rel="noreferrer"
+                          className="text-[#02a95c] underline underline-offset-2"
+                        >
+                          {block.text}
+                        </a>
+                      </p>
+                    ) : null;
+                  }
+                  return <hr className="my-8 border-slate-200" />;
+                })();
+
+                return (
+                  <Fragment key={key}>
+                    {content}
+                    {(index + 1) % 4 === 0 && index < blocks.length - 1 && (
+                      <PreviewAdStripe />
+                    )}
+                  </Fragment>
+                );
               })}
             </div>
           </article>

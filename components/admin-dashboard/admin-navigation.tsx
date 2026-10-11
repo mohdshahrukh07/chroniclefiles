@@ -2,6 +2,7 @@ import Link from "next/link";
 import {
   Files,
   FolderKanban,
+  ChartNoAxesCombined,
   LayoutDashboard,
   Newspaper,
   Users,
@@ -11,6 +12,7 @@ const navigationItems = [
   { label: "Dashboard", href: "/admin-dashboard", icon: LayoutDashboard },
   { label: "Posts", href: "/admin-dashboard/posts", icon: Newspaper },
   { label: "Categories", href: "/admin-dashboard/categories", icon: FolderKanban },
+  { label: "Analytics", href: "/admin-dashboard/analytics", icon: ChartNoAxesCombined },
   { label: "Media", href: "/admin-dashboard/media", icon: Files },
   { label: "Users", href: "/admin-dashboard/users", icon: Users },
 ];
@@ -30,7 +32,9 @@ export function AdminNavigation({
         const isActive =
           href === activeHref ||
           (href === "/admin-dashboard/posts" &&
-            activeHref.startsWith("/admin-dashboard/posts/"));
+            activeHref.startsWith("/admin-dashboard/posts/")) ||
+          (href === "/admin-dashboard/analytics" &&
+            activeHref.startsWith("/admin-dashboard/analytics"));
 
         return (
           <Link

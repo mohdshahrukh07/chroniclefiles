@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Discover how artificial intelligence is changing education and learning." />
+  <title>How Artificial Intelligence Is Changing the Way We Learn | ChronicleFiles</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: "#02A95C",
+            teal: "#608A89",
+            pale: "#E8F2F4",
+            ink: "#444444"
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    :root {
+      --brand: #02A95C;
+      --teal: #608A89;
+      --pale: #E8F2F4;
+      --ink: #444444;
+      --white: #FEFEFE;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--white);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    a { text-decoration: none; }
+
+    .container-wide {
+      width: min(1400px, calc(100% - 48px));
+      margin-inline: auto;
+    }
+
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      z-index: 40;
+      top: calc(100% + 8px);
+      left: 0;
+      width: 210px;
+      padding: 8px;
+      background: #fff;
+      border: 1px solid #e5eae7;
+      border-radius: 6px;
+      box-shadow: 0 14px 35px rgba(0, 0, 0, .12);
+    }
+
+    .dropdown-menu.open { display: block; }
+
+    .dropdown-menu a {
+      display: block;
+      padding: 10px 12px;
+      border-radius: 4px;
+      color: #444;
+      font-size: 13px;
+    }
+
+    .dropdown-menu a:hover {
+      background: var(--pale);
+      color: var(--brand);
+    }
+
+    .desktop-nav { display: flex; }
+
+    .mobile-menu { display: none; }
+    .mobile-menu.open { display: block; }
+
+    .mobile-menu > a,
+    .mobile-menu .mobile-cat-link {
+      display: block;
+      padding: 12px 0;
+      border-bottom: 1px solid #edf0ee;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .mobile-categories {
+      display: none;
+      padding-left: 14px;
+    }
+
+    .mobile-categories.open { display: block; }
+
+    /* Main: deliberately small top gap */
+    main {
+      width: 100%;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 24px 24px 64px;
+    }
+
+    .page-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 300px;
+      gap: 42px;
+      align-items: start;
+    }
+
+    .article-category {
+      display: inline-block;
+      color: var(--brand);
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .7px;
+    }
+
+    .article-title {
+      margin: 12px 0 14px;
+      color: #252d29;
+      font-size: clamp(32px, 4vw, 46px);
+      line-height: 1.16;
+      font-weight: 800;
+      letter-spacing: -1.3px;
+    }
+
+    .article-excerpt {
+      margin: 0 0 18px;
+      color: #66716c;
+      font-size: 18px;
+      line-height: 1.7;
+    }
+
+    .article-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 22px;
+      color: #727c77;
+      font-size: 13px;
+    }
+
+    .article-meta .published-label {
+      color: #525d57;
+      font-weight: 600;
+    }
+
+    .article-meta time {
+      color: #727c77;
+    }
+
+    .hero-image {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      border-radius: 12px;
+      background: var(--pale);
+    }
+
+    .article-body {
+      margin-top: 26px;
+      font-size: 17px;
+      line-height: 1.9;
+      color: #4b554f;
+    }
+
+    .article-body h2 {
+      margin: 30px 0 12px;
+      color: #28342d;
+      font-size: 27px;
+      line-height: 1.3;
+      font-weight: 750;
+    }
+
+    .article-body p { margin: 0 0 18px; }
+
+    /* Horizontal advertisement banners */
+    .ad-banner {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 104px;
+      margin: 28px 0;
+      padding: 22px;
+      overflow: hidden;
+      border-radius: 10px;
+      background: #dce9e3;
+      isolation: isolate;
+    }
+
+    .ad-banner img {
+      position: absolute;
+      inset: 0;
+      z-index: -2;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .ad-banner::after {
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      content: "";
+      background: linear-gradient(90deg, #11251cdd, #11251c65);
+    }
+
+    .ad-copy {
+      width: 100%;
+      color: white;
+      text-align: center;
+    }
+
+    .ad-label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      opacity: .85;
+    }
+
+    .ad-copy strong {
+      display: block;
+      font-size: clamp(17px, 2vw, 24px);
+      line-height: 1.3;
+    }
+
+    .ad-copy span:last-child {
+      display: block;
+      margin-top: 5px;
+      font-size: 12px;
+      opacity: .9;
+    }
+
+    /* Related posts */
+    .related-section { margin-top: 42px; }
+
+    .section-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .section-heading h2 {
+      margin: 0;
+      color: #26332c;
+      font-size: 25px;
+      font-weight: 800;
+    }
+
+    .carousel-controls { display: flex; gap: 8px; }
+
+    .carousel-controls button {
+      width: 38px;
+      height: 38px;
+      border: 1px solid #dfe8e2;
+      border-radius: 50%;
+      background: white;
+      font-size: 19px;
+      cursor: pointer;
+    }
+
+    .carousel-controls button:hover {
+      color: var(--brand);
+      border-color: var(--brand);
+    }
+
+    .related-track {
+      display: grid;
+      grid-auto-columns: calc((100% - 36px) / 3);
+      grid-auto-flow: column;
+      gap: 18px;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      scrollbar-width: none;
+      scroll-snap-type: x mandatory;
+    }
+
+    .related-track::-webkit-scrollbar { display: none; }
+
+    .related-card {
+      position: relative;
+      min-width: 0;
+      height: 220px;
+      overflow: hidden;
+      border-radius: 10px;
+      background: #dfe9e3;
+      scroll-snap-align: start;
+    }
+
+    .related-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform .3s;
+    }
+
+    .related-card:hover img { transform: scale(1.05); }
+
+    .related-card::after {
+      position: absolute;
+      inset: 0;
+      content: "";
+      background: linear-gradient(transparent 20%, #101b17df);
+    }
+
+    .related-card h3 {
+      position: absolute;
+      z-index: 1;
+      right: 14px;
+      bottom: 14px;
+      left: 14px;
+      margin: 0;
+      color: white;
+      font-size: 17px;
+      line-height: 1.4;
+      font-weight: 700;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      position: sticky;
+      top: 20px;
+    }
+
+    .sidebar-ad {
+      min-height: 220px;
+      margin-bottom: 28px;
+    }
+
+    .sidebar-ad .ad-banner {
+      min-height: 220px;
+      margin: 0;
+    }
+
+    .sidebar-section { margin: 28px 0; }
+
+    .sidebar-title {
+      margin: 0 0 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #e5ebe7;
+      color: #2b362f;
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .recommendation {
+      display: grid;
+      grid-template-columns: 92px minmax(0, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+      align-items: center;
+    }
+
+    .recommendation img {
+      width: 92px;
+      height: 72px;
+      border-radius: 7px;
+      object-fit: cover;
+      background: var(--pale);
+    }
+
+    .recommendation h3 {
+      margin: 0 0 5px;
+      color: #39433d;
+      font-size: 14px;
+      line-height: 1.45;
+      font-weight: 700;
+    }
+
+    .recommendation span {
+      color: #7b8580;
+      font-size: 12px;
+    }
+
+    .category-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .category-chip {
+      padding: 8px 12px;
+      border-radius: 20px;
+      background: #edf7f1;
+      color: #31734e;
+      font-size: 13px;
+    }
+
+    .category-chip:hover {
+      background: #d9f1e3;
+    }
+
+    .share-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .share-button {
+      padding: 9px 14px;
+      border: 1px solid #e0e8e2;
+      border-radius: 7px;
+      background: white;
+      color: #48534c;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .share-button:hover {
+      color: var(--brand);
+      border-color: var(--brand);
+    }
+
+    /* Footer */
+    .site-footer {
+      background: #202b25;
+      color: #dbe5de;
+    }
+
+    .footer-inner {
+      max-width: 1280px;
+      margin: auto;
+      padding: 38px 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .footer-logo {
+      color: white;
+      font-size: 25px;
+      font-weight: 800;
+      letter-spacing: -.7px;
+    }
+
+    .footer-inner p {
+      margin: 8px 0 0;
+      color: #afbbb3;
+      font-size: 13px;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      font-size: 14px;
+    }
+
+    .footer-links a:hover { color: #78e6a8; }
+
+    @media (max-width: 900px) {
+      .container-wide { width: min(100% - 32px, 720px); }
+
+      .page-grid {
+        grid-template-columns: minmax(0, 1fr) 260px;
+        gap: 26px;
+      }
+
+      .related-track {
+        grid-auto-columns: calc((100% - 18px) / 2);
+      }
+
+    }
+
+    @media (max-width: 767px) {
+      .container-wide { width: calc(100% - 32px); }
+      header .desktop-nav { display: none; }
+    }
+
+    @media (max-width: 720px) {
+      main {
+        padding: 20px 18px 44px;
+      }
+
+      .page-grid { grid-template-columns: 1fr; gap: 30px; }
+
+      .article-title {
+        margin-top: 10px;
+        font-size: 34px;
+        letter-spacing: -.8px;
+      }
+
+      .article-excerpt { font-size: 16px; }
+
+      .article-body {
+        margin-top: 22px;
+        font-size: 16px;
+      }
+
+      .article-body h2 { font-size: 24px; }
+
+      .sidebar {
+        position: static;
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar-ad .ad-banner { min-height: 150px; }
+      .sidebar-ad { min-height: 150px; }
+
+      .related-track { grid-auto-columns: 78%; }
+      .related-card { height: 220px; }
+
+      .footer-inner { padding: 30px 18px; }
+    }
+
+    @media (max-width: 380px) {
+      .container-wide { width: calc(100% - 24px); }
+      .article-title { font-size: 30px; }
+      .article-meta { gap: 6px; font-size: 12px; }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="sticky top-0 z-40 border-b border-gray-200 bg-white/95 backdrop-blur">
+    <div class="container-wide">
+      <div class="flex h-[76px] items-center justify-between gap-5">
+
+        <a href="index.html" class="shrink-0 text-[25px] font-black tracking-[-1.4px] text-[#222] sm:text-[29px]">
+          Chronicle<span class="text-brand">Files</span>
+        </a>
+
+        <nav class="desktop-nav flex items-center gap-7 text-[13px] font-bold text-gray-700">
+          <a href="index.html" class="transition hover:text-brand">Home</a>
+          <a href="category.html?category=News" class="transition hover:text-brand">News</a>
+          <a href="category.html?category=Technology" class="transition hover:text-brand">Technology</a>
+
+          <div class="relative" id="categoriesDropdown">
+            <button id="categoriesButton" class="flex items-center gap-1 py-3 hover:text-brand"
+              aria-expanded="false" aria-controls="categoriesMenu">
+              Categories <span aria-hidden="true">⌄</span>
+            </button>
+
+            <div class="dropdown-menu" id="categoriesMenu">
+              <a href="category.html?category=Technology">Technology</a>
+              <a href="category.html?category=Education">Education</a>
+              <a href="category.html?category=Entertainment">Entertainment</a>
+              <a href="category.html?category=News">News</a>
+            </div>
+          </div>
+        </nav>
+
+        <div class="flex items-center gap-2">
+          <button id="headerSearchButton" aria-label="Go to article search"
+            class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-lg hover:bg-pale">
+            ⌕
+          </button>
+
+          <button id="mobileMenuButton" aria-label="Toggle navigation" aria-expanded="false"
+            aria-controls="mobileMenu"
+            class="flex h-10 w-10 items-center justify-center rounded-md border border-gray-200 text-xl md:hidden">
+            ☰
+          </button>
+        </div>
+      </div>
+
+      <nav id="mobileMenu" class="mobile-menu pb-3 md:hidden">
+        <a href="index.html">Home</a>
+        <a href="category.html?category=latest">Latest</a>
+        <a href="category.html?category=News">News</a>
+        <a href="category.html?category=Technology">Technology</a>
+        <button id="mobileCategoriesButton" aria-expanded="false" aria-controls="mobileCategories"
+          class="flex w-full items-center justify-between py-3 text-left text-sm font-bold">
+          Categories <span>⌄</span>
+        </button>
+        <div id="mobileCategories" class="mobile-categories">
+          <a class="mobile-cat-link" href="category.html?category=Education">Education</a>
+          <a class="mobile-cat-link" href="category.html?category=Entertainment">Entertainment</a>
+          <a class="mobile-cat-link" href="category.html?category=News">News</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="page-grid">
+      <article>
+        <header class="article-header">
+          <a href="#" class="article-category">Technology</a>
+
+          <h1 class="article-title">
+            How Artificial Intelligence Is Changing the Way We Learn
+          </h1>
+
+          <p class="article-excerpt">
+            Artificial intelligence is transforming education, changing how
+            students study, how teachers work, and how knowledge is delivered
+            around the world.
+          </p>
+
+          <!-- Published label and timestamp are visible in the initial HTML.
+               Replace datetime with the real publishedAt value from your DB. -->
+          <div class="article-meta">
+            <span>Technology</span>
+            <span aria-hidden="true">•</span>
+            <span class="published-label">Published</span>
+            <span aria-hidden="true">•</span>
+            <time
+              id="published-time"
+              datetime="2026-10-06T10:00:00+05:30"
+              title="Published on October 6, 2026 at 10:00 AM"
+            >October 6, 2026</time>
+          </div>
+
+          <img
+            class="hero-image"
+            src="https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=1400&q=85"
+            alt="Artificial intelligence and digital technology"
+          />
+        </header>
+
+        <!-- Article ad 1 -->
+        <div class="ad-banner">
+          <img src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1200&q=80" alt="" />
+          <div class="ad-copy">
+            <span class="ad-label">Advertisement</span>
+            <strong>Make More Room for Great Ideas</strong>
+            <span>Discover tools to support your next project.</span>
+          </div>
+        </div>
+
+        <div class="article-body">
+          <p>
+            Artificial intelligence is becoming an important part of modern
+            education. From personalized study recommendations to interactive
+            learning assistants, new tools are changing how people access
+            information and build skills.
+          </p>
+
+          <h2>Personalized Learning Experiences</h2>
+
+          <p>
+            Every student learns differently. Some understand a concept
+            quickly through visual examples, while others benefit from
+            repetition, practice questions, or step-by-step explanations.
+            AI-powered systems can adapt learning materials to these different
+            needs.
+          </p>
+
+          <p>
+            This flexibility can help learners focus on difficult topics,
+            identify knowledge gaps, and practise at a comfortable pace.
+            Teachers can also use these insights to better understand where
+            their students may need additional support.
+          </p>
+
+          <!-- Article ad 2 -->
+          <div class="ad-banner">
+            <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80" alt="" />
+            <div class="ad-copy">
+              <span class="ad-label">Advertisement</span>
+              <strong>Build Your Skills for Tomorrow</strong>
+              <span>Explore resources for lifelong learning.</span>
+            </div>
+          </div>
+
+          <h2>Helping Teachers Work More Efficiently</h2>
+
+          <p>
+            AI can assist with routine tasks such as preparing practice
+            questions, organizing lesson materials, and providing initial
+            feedback. Used thoughtfully, these capabilities may give teachers
+            more time to focus on discussion, mentorship, and individual
+            student needs.
+          </p>
+
+          <p>
+            These tools are most useful when teachers remain involved in
+            reviewing the results. AI-generated information can be incomplete
+            or inaccurate, so important educational content still needs human
+            judgement and verification.
+          </p>
+
+          <!-- Article ad 3 -->
+          <div class="ad-banner">
+            <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80" alt="" />
+            <div class="ad-copy">
+              <span class="ad-label">Advertisement</span>
+              <strong>Turn Curiosity into Knowledge</strong>
+              <span>Find new ways to explore your interests.</span>
+            </div>
+          </div>
+
+          <h2>Challenges and Responsible Use</h2>
+
+          <p>
+            AI in education also raises important questions about privacy,
+            bias, academic integrity, and unequal access to technology.
+            Students should understand how to evaluate AI-generated answers
+            instead of accepting every response as correct.
+          </p>
+
+          <p>
+            Schools and educators need clear policies about the use of these
+            tools, especially when student data is involved. Transparent
+            practices and human oversight help make technology more useful
+            and trustworthy.
+          </p>
+
+          <!-- Article ad 4 -->
+          <div class="ad-banner">
+            <img src="https://images.unsplash.com/photo-1516321497487-e288fb19713f?auto=format&fit=crop&w=1200&q=80" alt="" />
+            <div class="ad-copy">
+              <span class="ad-label">Advertisement</span>
+              <strong>Discover What's Possible with Technology</strong>
+              <span>Keep learning, experimenting, and growing.</span>
+            </div>
+          </div>
+
+          <h2>What the Future May Look Like</h2>
+
+          <p>
+            AI is unlikely to replace the human relationships at the heart of
+            education. Instead, its most valuable role may be to support
+            students and teachers with more flexible resources, faster
+            feedback, and additional ways to explore complex ideas.
+          </p>
+
+          <p>
+            The goal should not be to use technology everywhere, but to choose
+            tools that genuinely improve understanding, accessibility, and
+            learning outcomes.
+          </p>
+        </div>
+
+        <div class="share-row">
+          <button class="share-button" id="share-button">Share article</button>
+          <button class="share-button" id="copy-link-button">Copy link</button>
+        </div>
+
+        <!-- Related articles -->
+        <section class="related-section" aria-labelledby="related-heading">
+          <div class="section-heading">
+            <h2 id="related-heading">Related Technology Stories</h2>
+
+            <div class="carousel-controls">
+              <button id="carousel-prev" aria-label="Previous articles">‹</button>
+              <button id="carousel-next" aria-label="Next articles">›</button>
+            </div>
+          </div>
+
+          <div class="related-track" id="related-track">
+            <a class="related-card" href="#">
+              <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80" alt="Computer hardware" />
+              <h3>How Technology Is Reshaping Everyday Life</h3>
+            </a>
+
+            <a class="related-card" href="#">
+              <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80" alt="Digital world" />
+              <h3>Understanding the Next Wave of Digital Innovation</h3>
+            </a>
+
+            <a class="related-card" href="#">
+              <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=600&q=80" alt="People using technology" />
+              <h3>Practical Ways to Improve Your Digital Skills</h3>
+            </a>
+
+            <a class="related-card" href="#">
+              <img src="https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=600&q=80" alt="Robotics" />
+              <h3>What to Know About Modern Robotics</h3>
+            </a>
+
+            <a class="related-card" href="#">
+              <img src="https://images.unsplash.com/photo-1504639725590-34d0984388bd?auto=format&fit=crop&w=600&q=80" alt="Programming screen" />
+              <h3>How Coding Skills Open New Opportunities</h3>
+            </a>
+
+            <a class="related-card" href="#">
+              <img src="https://images.unsplash.com/photo-1526378722484-bd91ca387e72?auto=format&fit=crop&w=600&q=80" alt="Cybersecurity technology" />
+              <h3>Why Digital Privacy Matters More Than Ever</h3>
+            </a>
+
+            <a class="related-card" href="#">
+              <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=600&q=80" alt="Technology team working" />
+              <h3>Building Better Products Through Collaboration</h3>
+            </a>
+          </div>
+        </section>
+
+        <!-- Article ad 5: immediately below related carousel -->
+        <div class="ad-banner">
+          <img src="https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1200&q=80" alt="" />
+          <div class="ad-copy">
+            <span class="ad-label">Advertisement</span>
+            <strong>Your Next Great Idea Starts Here</strong>
+            <span>Explore useful tools, resources, and inspiration.</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Sidebar -->
+      <aside class="sidebar" aria-label="Sidebar">
+        <!-- Sidebar ad 6 -->
+        <div class="sidebar-ad">
+          <div class="ad-banner">
+            <img src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=700&q=80" alt="" />
+            <div class="ad-copy">
+              <span class="ad-label">Advertisement</span>
+              <strong>Ideas That Move You Forward</strong>
+              <span>Discover something new today.</span>
+            </div>
+          </div>
+        </div>
+
+        <section class="sidebar-section">
+          <h2 class="sidebar-title">Recommended Reads</h2>
+
+          <a class="recommendation" href="#">
+            <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=300&q=75" alt="" />
+            <div>
+              <h3>Technology Trends Worth Following</h3>
+              <span>Technology</span>
+            </div>
+          </a>
+
+          <a class="recommendation" href="#">
+            <img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=300&q=75" alt="" />
+            <div>
+              <h3>Simple Ways to Learn Something New</h3>
+              <span>Education</span>
+            </div>
+          </a>
+
+          <a class="recommendation" href="#">
+            <img src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=300&q=75" alt="" />
+            <div>
+              <h3>Building Better Habits for Focus</h3>
+              <span>Lifestyle</span>
+            </div>
+          </a>
+        </section>
+
+        <section class="sidebar-section">
+          <h2 class="sidebar-title">Explore Categories</h2>
+          <div class="category-list">
+            <a href="#" class="category-chip">News</a>
+            <a href="#" class="category-chip">Technology</a>
+            <a href="#" class="category-chip">Education</a>
+            <a href="#" class="category-chip">Science</a>
+            <a href="#" class="category-chip">Entertainment</a>
+            <a href="#" class="category-chip">Business</a>
+          </div>
+        </section>
+
+        <!-- Sidebar ad 7 -->
+        <div class="sidebar-ad">
+          <div class="ad-banner">
+            <img src="https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=700&q=80" alt="" />
+            <div class="ad-copy">
+              <span class="ad-label">Advertisement</span>
+              <strong>Make Space for Inspiration</strong>
+              <span>Ideas and resources for curious minds.</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div>
+        <a href="#" class="footer-logo">ChronicleFiles</a>
+        <p>Stories, ideas, and knowledge for curious minds.</p>
+      </div>
+
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="#">Home</a>
+        <a href="#">News</a>
+        <a href="#">Technology</a>
+        <a href="#">Categories</a>
+      </nav>
+
+      <p>© <span id="current-year"></span> ChronicleFiles. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Relative publication time
+    // For your real app, replace the datetime attribute with MongoDB's publishedAt.
+    (function initializePublishedTime() {
+      const timeElement = document.getElementById("published-time");
+      if (!timeElement) return;
+
+      const dateString = timeElement.getAttribute("datetime");
+      const publishedDate = new Date(dateString);
+
+      if (!dateString || Number.isNaN(publishedDate.getTime())) {
+        timeElement.textContent = "Date unavailable";
+        return;
+      }
+
+      function formatRelativeTime(date) {
+        const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+
+        if (seconds < 0) {
+          // Do not display "in the future" as if the article were published.
+          return date.toLocaleDateString(undefined, {
+            year: "numeric",
+            month: "short",
+            day: "numeric"
+          });
+        }
+
+        if (seconds < 60) return "just now";
+
+        const minutes = Math.floor(seconds / 60);
+        if (minutes < 60) {
+          return minutes + (minutes === 1 ? " minute ago" : " minutes ago");
+        }
+
+        const hours = Math.floor(minutes / 60);
+        if (hours < 24) {
+          return hours + (hours === 1 ? " hour ago" : " hours ago");
+        }
+
+        const days = Math.floor(hours / 24);
+        if (days < 30) {
+          return days + (days === 1 ? " day ago" : " days ago");
+        }
+
+        const months = Math.floor(days / 30);
+        if (months < 12) {
+          return months + (months === 1 ? " month ago" : " months ago");
+        }
+
+        const years = Math.floor(days / 365);
+        return years + (years === 1 ? " year ago" : " years ago");
+      }
+
+      function updatePublishedTime() {
+        timeElement.textContent = formatRelativeTime(publishedDate);
+        timeElement.dateTime = publishedDate.toISOString();
+        timeElement.title = "Published on " + publishedDate.toLocaleString();
+      }
+
+      updatePublishedTime();
+      setInterval(updatePublishedTime, 60000);
+    })();
+
+    // Desktop categories dropdown
+    const categoriesDropdown = document.getElementById("categoriesDropdown");
+    const categoriesButton = document.getElementById("categoriesButton");
+    const categoriesMenu = document.getElementById("categoriesMenu");
+
+    function closeDesktopDropdown() {
+      categoriesMenu.classList.remove("open");
+      categoriesButton.setAttribute("aria-expanded", "false");
+    }
+
+    categoriesButton.addEventListener("click", function (event) {
+      event.stopPropagation();
+      const isOpen = categoriesMenu.classList.toggle("open");
+      categoriesButton.setAttribute("aria-expanded", String(isOpen));
+    });
+
+    document.addEventListener("click", function (event) {
+      if (!categoriesDropdown.contains(event.target)) closeDesktopDropdown();
+    });
+
+    categoriesMenu.querySelectorAll("a").forEach(function (link) {
+      link.addEventListener("click", closeDesktopDropdown);
+    });
+
+    // Mobile navigation
+    const mobileMenuButton = document.getElementById("mobileMenuButton");
+    const mobileMenu = document.getElementById("mobileMenu");
+    const mobileCategoriesButton = document.getElementById("mobileCategoriesButton");
+    const mobileCategories = document.getElementById("mobileCategories");
+
+    mobileMenuButton.addEventListener("click", function () {
+      const isOpen = mobileMenu.classList.toggle("open");
+      mobileMenuButton.setAttribute("aria-expanded", String(isOpen));
+      mobileMenuButton.setAttribute(
+        "aria-label",
+        isOpen ? "Close navigation" : "Open navigation"
+      );
+    });
+
+    mobileCategoriesButton.addEventListener("click", function () {
+      const isOpen = mobileCategories.classList.toggle("open");
+      mobileCategoriesButton.setAttribute("aria-expanded", String(isOpen));
+    });
+
+    mobileMenu.querySelectorAll("a").forEach(function (link) {
+      link.addEventListener("click", function () {
+        mobileMenu.classList.remove("open");
+        mobileMenuButton.setAttribute("aria-expanded", "false");
+        mobileMenuButton.setAttribute("aria-label", "Open navigation");
+      });
+    });
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape") {
+        closeDesktopDropdown();
+        mobileMenu.classList.remove("open");
+        mobileMenuButton.setAttribute("aria-expanded", "false");
+        mobileMenuButton.setAttribute("aria-label", "Open navigation");
+      }
+    });
+
+    // Related posts carousel
+    const relatedTrack = document.getElementById("related-track");
+
+    document.getElementById("carousel-prev").addEventListener("click", function () {
+      relatedTrack.scrollBy({
+        left: -relatedTrack.clientWidth * 0.8,
+        behavior: "smooth"
+      });
+    });
+
+    document.getElementById("carousel-next").addEventListener("click", function () {
+      relatedTrack.scrollBy({
+        left: relatedTrack.clientWidth * 0.8,
+        behavior: "smooth"
+      });
+    });
+
+    // Share and copy-link actions
+    document.getElementById("share-button").addEventListener("click", async function () {
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: document.title,
+            url: window.location.href
+          });
+        } catch (error) {
+          if (error.name !== "AbortError") {
+            console.error("Unable to share article:", error);
+          }
+        }
+      } else {
+        try {
+          await navigator.clipboard.writeText(window.location.href);
+          this.textContent = "Link copied!";
+        } catch {
+          window.prompt("Copy this article link:", window.location.href);
+        }
+      }
+    });
+
+    document.getElementById("copy-link-button").addEventListener("click", async function () {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        this.textContent = "Copied!";
+        setTimeout(() => { this.textContent = "Copy link"; }, 1800);
+      } catch {
+        window.prompt("Copy this article link:", window.location.href);
+      }
+    });
+
+    document.getElementById("current-year").textContent =
+      new Date().getFullYear();
+
+    // Hide broken remote images instead of showing broken-image icons.
+    document.querySelectorAll("img").forEach(function (img) {
+      img.addEventListener("error", function () {
+        this.style.display = "none";
+      });
+    });
+  </script>
+</body>
+</html>

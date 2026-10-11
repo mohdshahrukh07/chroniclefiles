@@ -164,6 +164,40 @@ export async function updatePostAction(
   return savePost(input, postId);
 }
 
+export async function deletePostAction(
+  postId: string,
+): Promise<{ success: true } | { success: false; message: string }> {
+  const session = await getAdminSession();
+  if (!session) {
+    return { success: false, message: "Your session has expired. Sign in again." };
+  }
+
+  if (!Types.ObjectId.isValid(postId)) {
+    return { success: false, message: "The requested post could not be found." };
+  }
+
+  try {
+    await connectToDatabase();
+    const deletedPost = await Post.findByIdAndDelete(postId).exec();
+
+    if (!deletedPost) {
+      return { success: false, message: "The requested post could not be found." };
+    }
+
+    revalidatePath("/admin-dashboard");
+    revalidatePath("/admin-dashboard/posts");
+    return { success: true };
+  } catch (error) {
+    const errorName = error instanceof Error ? error.name : "UnknownError";
+    const errorMessage = getSafeErrorMessage(error);
+    console.error(`Post deletion failed (${errorName}): ${errorMessage}`);
+    return {
+      success: false,
+      message: "The post could not be deleted. Please try again.",
+    };
+  }
+}
+
 async function savePost(
   input: CreatePostInput,
   postId?: string,

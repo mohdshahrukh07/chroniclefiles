@@ -4,6 +4,7 @@ export interface CategoryDocument {
   name: string;
   slug: string;
   description?: string;
+  image?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -23,6 +24,10 @@ const categorySchema = new Schema<CategoryDocument>(
       trim: true,
     },
     description: {
+      type: String,
+      trim: true,
+    },
+    image: {
       type: String,
       trim: true,
     },
