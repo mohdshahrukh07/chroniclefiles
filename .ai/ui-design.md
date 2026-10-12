@@ -119,6 +119,15 @@ The dashboard uses a standard editorial/admin palette and includes:
 
 These align strongly with the mock design in `Designs/dashboard.html`.
 
+### Admin sign-in
+
+The unauthenticated `/admin-dashboard` screen uses the ChronicleFiles editorial
+palette: pale blue-green page background, white sign-in surface, forest-green
+brand panel, and primary-green form action. The split card stacks on mobile
+and places the sign-in form beside the brand panel on desktop. Inputs retain
+visible keyboard focus, associated labels, and the existing accessible error
+announcement and pending-submit behavior.
+
 ### Analytics dashboard
 
 The Analytics page reuses the protected dashboard sidebar/mobile navigation, ChronicleFiles green accent, KPI cards, and section cards. It includes a date-range/interval filter, responsive traffic chart, category/device/country breakdowns, click-event summary, and searchable/sortable post table with trend sparklines. Empty and unavailable data are described explicitly rather than replaced with sample values. Browser viewport verification remains pending.

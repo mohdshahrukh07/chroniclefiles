@@ -11,9 +11,36 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+function isTiptapNode(value: unknown, depth = 0): value is JSONContent {
+  if (
+    depth > 50 ||
+    !isRecord(value) ||
+    typeof value.type !== "string" ||
+    (value.text !== undefined && typeof value.text !== "string") ||
+    (value.type === "text" && typeof value.text !== "string") ||
+    (value.attrs !== undefined && !isRecord(value.attrs)) ||
+    (value.marks !== undefined &&
+      (!Array.isArray(value.marks) ||
+        !value.marks.every(
+          (mark) =>
+            isRecord(mark) &&
+            typeof mark.type === "string" &&
+            (mark.attrs === undefined || isRecord(mark.attrs)),
+        )))
+  ) {
+    return false;
+  }
+
+  return (
+    value.content === undefined ||
+    (Array.isArray(value.content) &&
+      value.content.every((child) => isTiptapNode(child, depth + 1)))
+  );
+}
+
 export function isTiptapDocument(value: unknown): value is TiptapDocument {
   return (
-    isRecord(value) &&
+    isTiptapNode(value) &&
     value.type === "doc" &&
     Array.isArray(value.content)
   );

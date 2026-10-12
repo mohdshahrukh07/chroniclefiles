@@ -157,3 +157,13 @@
 ## Historical details unavailable; reconstructed from current code and documentation
 
 This repository contains both current project documentation and implemented code patterns for the Next.js + MongoDB + Tiptap + Cloudinary admin workflow, but the full historical timeline of every earlier change is not fully reconstructable from the code alone. The project’s current state and the code itself are therefore the primary source of truth for this handoff.
+
+## 2026-10-12 — Final security and reliability audit
+
+### What changed
+- Hardened recursive Tiptap content validation so malformed nested content, marks, or attributes are rejected before save and filtered from normalized public/edit content.
+- Documented the remaining process-local analytics rate-limit limitation and the need to verify Cloudinary unsigned-upload restrictions and database-backed flows in staging.
+
+### Verification
+- TypeScript, ESLint, Problems, production build, and diff checks were run; results are recorded in `process.md`.
+- No database writes, Cloudinary uploads, or authenticated browser actions were performed.

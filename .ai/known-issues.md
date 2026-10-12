@@ -137,6 +137,26 @@ Planned Fix:
 Important Notes:
 - the in-memory map is capped to prevent unbounded growth
 - active time is estimated; country requires trusted edge headers; rate limiting is process-local
+- the visitor token is client-held and not signed, so clients can rotate it to evade the per-token quota; use this only as a best-effort abuse guard, not as a security boundary
+
+## Issue: Admin login has no failed-attempt throttling
+
+Status: Security hardening needed
+
+Symptoms:
+- the sign-in server action checks credentials but does not limit repeated failed attempts
+
+Root Cause:
+- no account- or request-level login throttle is currently implemented
+
+Affected Files:
+- app/admin-dashboard/actions.ts
+
+Current Workaround:
+- use a unique strong admin password and protect the deployment with platform-level abuse controls
+
+Important Notes:
+- an application throttle needs a deliberate policy and preferably shared storage; process-local account lockout can be bypassed across instances and can also let attackers deny access to a targeted account
 
 ## Issue: Unsupported embed URLs are rejected intentionally
 
