@@ -72,20 +72,26 @@ export function PublicCategoryDropdown({
         }`}
       >
         <div className="min-h-0 overflow-hidden rounded-md border border-[#e5eae7] bg-white shadow-[0_14px_35px_rgba(0,0,0,.12)]">
-          <ul className="grid grid-cols-2 gap-1 p-2">
-            {categories.map((category) => (
-              <li key={category.slug}>
-                <Link
-                  href={`/category/${category.slug}`}
-                  data-analytics-event="category-link"
-                  onClick={() => setIsOpen(false)}
-                  className="block rounded-sm px-3 py-2.5 text-[13px] font-medium leading-5 hover:bg-[#E8F2F4] hover:text-[#02A95C] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#02A95C]"
-                >
-                  {category.name}
-                </Link>
-              </li>
-            ))}
-          </ul>
+          {categories.length ? (
+            <ul className="grid grid-cols-2 gap-1 p-2">
+              {categories.map((category) => (
+                <li key={category.slug}>
+                  <Link
+                    href={`/category/${category.slug}`}
+                    data-analytics-event="category-link"
+                    onClick={() => setIsOpen(false)}
+                    className="block rounded-sm px-3 py-2.5 text-[13px] font-medium leading-5 hover:bg-[#E8F2F4] hover:text-[#02A95C] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#02A95C]"
+                  >
+                    {category.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="px-4 py-3 text-sm text-gray-500">
+              No additional categories are available.
+            </p>
+          )}
         </div>
       </div>
     </div>

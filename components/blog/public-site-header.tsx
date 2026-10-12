@@ -7,12 +7,14 @@ interface PublicSiteHeaderProps {
   categories?: PublicCategoryLink[];
 }
 
+const featuredCategoryLinks = [
+  { name: "News", slug: "news" },
+  { name: "Technology", slug: "technology" },
+] as const;
+
 export function PublicSiteHeader({
   categories = [],
 }: PublicSiteHeaderProps = {}) {
-  const featuredCategories = categories.filter((category) =>
-    ["news", "technology"].includes(category.slug.toLowerCase()),
-  );
   const otherCategories = categories.filter(
     (category) =>
       !["news", "technology"].includes(category.slug.toLowerCase()),
@@ -47,7 +49,7 @@ export function PublicSiteHeader({
             >
               Latest
             </Link>
-            {featuredCategories.map((category) => (
+            {featuredCategoryLinks.map((category) => (
               <Link
                 key={category.slug}
                 href={`/category/${category.slug}`}
@@ -57,9 +59,7 @@ export function PublicSiteHeader({
                 {category.name}
               </Link>
             ))}
-            {otherCategories.length > 0 && (
-              <PublicCategoryDropdown categories={otherCategories} />
-            )}
+            <PublicCategoryDropdown categories={otherCategories} />
           </nav>
 
           <div className="flex shrink-0 items-center gap-2">
@@ -119,13 +119,30 @@ export function PublicSiteHeader({
                 >
                   Latest
                 </Link>
-                {categories.length > 0 && (
-                  <div className="mt-2 border-t border-gray-100 pt-2">
-                    <p className="px-3 py-1 text-[10px] font-extrabold uppercase tracking-[.14em] text-[#608A89]">
-                      Categories
-                    </p>
-                    <ul className="grid grid-cols-2 gap-1">
-                      {categories.map((category) => (
+                <div className="mt-2 border-t border-gray-100 pt-2">
+                  <p className="px-3 py-1 text-[10px] font-extrabold uppercase tracking-[.14em] text-[#608A89]">
+                    Categories
+                  </p>
+                  <ul className="grid grid-cols-2 gap-1">
+                    {featuredCategoryLinks.map((category) => (
+                      <li key={category.slug}>
+                        <Link
+                          href={`/category/${category.slug}`}
+                          data-analytics-event="category-link"
+                          className="block rounded-sm px-3 py-2.5 text-sm font-semibold hover:bg-[#E8F2F4] hover:text-[#02A95C] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#02A95C]"
+                        >
+                          {category.name}
+                        </Link>
+                      </li>
+                    ))}
+                    {categories
+                      .filter(
+                        (category) =>
+                          !["news", "technology"].includes(
+                            category.slug.toLowerCase(),
+                          ),
+                      )
+                      .map((category) => (
                         <li key={category.slug}>
                           <Link
                             href={`/category/${category.slug}`}
@@ -136,9 +153,8 @@ export function PublicSiteHeader({
                           </Link>
                         </li>
                       ))}
-                    </ul>
-                  </div>
-                )}
+                  </ul>
+                </div>
               </nav>
             </details>
           </div>
