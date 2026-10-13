@@ -81,6 +81,7 @@ Current behavior:
 - the article sidebar uses real related published posts and Category records
 - article metadata, social cards, and conditional BlogPosting JSON-LD use saved post fields and an explicit configured site origin
 - reusable sidebar and inline ad slots are presentation-only and emit no markup or reserved space when ads are disabled/unconfigured
+- Google Tag Manager container `GTM-T9LFSR4Z` is loaded globally from the root layout before hydration; its no-script fallback is placed at the start of `<body>`. Individual tags and consent configuration are managed in GTM.
 
 Relevant files:
 - app/page.tsx
