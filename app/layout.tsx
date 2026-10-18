@@ -23,6 +23,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: getPublicSiteUrl() ?? undefined,
+  icons: {
+    icon: SITE_META_IMAGE_URL,
+    shortcut: SITE_META_IMAGE_URL,
+    apple: SITE_META_IMAGE_URL,
+  },
   title: "ChronicleFiles",
   description: "Stories and ideas from ChronicleFiles.",
   openGraph: {
