@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { HomepagePage } from "@/components/blog/homepage-page";
 import { getPublicHomepageData } from "@/lib/homepage";
 import { getPublicSiteUrl } from "@/lib/public-site-config";
+import { SITE_META_IMAGE, SITE_META_IMAGE_URL } from "@/lib/site-metadata";
 
 const siteUrl = getPublicSiteUrl();
 
@@ -19,7 +20,15 @@ export const metadata: Metadata = {
     title: "ChronicleFiles — Stories, Ideas & Knowledge",
     description:
       "Discover stories, ideas, and knowledge across technology, education, entertainment, and more.",
+    images: [SITE_META_IMAGE],
     ...(siteUrl ? { url: siteUrl.toString() } : {}),
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ChronicleFiles — Stories, Ideas & Knowledge",
+    description:
+      "Discover stories, ideas, and knowledge across technology, education, entertainment, and more.",
+    images: [SITE_META_IMAGE_URL],
   },
 };
 

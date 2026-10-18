@@ -10,6 +10,7 @@ import {
   parsePublicPostSort,
 } from "@/lib/public-posts";
 import { getPublicSiteUrl } from "@/lib/public-site-config";
+import { SITE_META_IMAGE, SITE_META_IMAGE_URL } from "@/lib/site-metadata";
 
 interface CategoryPageProps {
   params: Promise<{ slug: string }>;
@@ -88,12 +89,14 @@ export async function generateMetadata({
         siteName: "ChronicleFiles",
         title,
         description,
+        images: [SITE_META_IMAGE],
         ...(canonicalUrl ? { url: canonicalUrl } : {}),
       },
       twitter: {
-        card: "summary",
+        card: "summary_large_image",
         title,
         description,
+        images: [SITE_META_IMAGE_URL],
       },
     };
   } catch (error) {

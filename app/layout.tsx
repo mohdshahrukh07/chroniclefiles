@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { DM_Sans, Geist_Mono, Newsreader } from "next/font/google";
+import { getPublicSiteUrl } from "@/lib/public-site-config";
+import { SITE_META_IMAGE, SITE_META_IMAGE_URL } from "@/lib/site-metadata";
 import "./globals.css";
 
 const googleTagManagerId = "GTM-T9LFSR4Z";
@@ -20,8 +22,17 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: getPublicSiteUrl() ?? undefined,
   title: "ChronicleFiles",
   description: "Stories and ideas from ChronicleFiles.",
+  openGraph: {
+    siteName: "ChronicleFiles",
+    images: [SITE_META_IMAGE],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: [SITE_META_IMAGE_URL],
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

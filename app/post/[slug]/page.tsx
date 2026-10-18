@@ -14,6 +14,7 @@ import {
   getPublishedPostBySlug,
 } from "@/lib/public-posts";
 import { getPublicSiteUrl } from "@/lib/public-site-config";
+import { SITE_META_IMAGE, SITE_META_IMAGE_URL } from "@/lib/site-metadata";
 
 interface PublicPostPageProps {
   params: Promise<{ slug: string }>;
@@ -52,6 +53,7 @@ export async function generateMetadata({
       post.excerpt ||
       `Read ${post.title} on ChronicleFiles.`;
     const image = safeWebUrl(post.thumbnail);
+    const socialImage = image ?? SITE_META_IMAGE_URL;
 
     return {
       title,
@@ -64,14 +66,16 @@ export async function generateMetadata({
         title,
         description,
         ...(canonicalUrl ? { url: canonicalUrl } : {}),
-        ...(image ? { images: [{ url: image }] } : {}),
+        images: [
+          image ? { url: image, alt: post.title } : SITE_META_IMAGE,
+        ],
         ...(post.publishedAt ? { publishedTime: post.publishedAt } : {}),
       },
       twitter: {
-        card: image ? "summary_large_image" : "summary",
+        card: "summary_large_image",
         title,
         description,
-        ...(image ? { images: [image] } : {}),
+        images: [socialImage],
       },
     };
   } catch (error) {
