@@ -38,7 +38,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function isCloudinaryImageUrl(value: string): boolean {
-  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
   if (!cloudName) return false;
 
   try {
@@ -97,6 +97,7 @@ async function validateCategoryImage(
 }
 
 function revalidateCategorySurfaces(): void {
+  revalidatePath("/sitemap.xml");
   revalidatePath("/admin-dashboard/categories");
   revalidatePath("/admin-dashboard/posts");
   revalidatePath("/admin-dashboard/posts/new");

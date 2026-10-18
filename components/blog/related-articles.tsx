@@ -67,7 +67,7 @@ export function RelatedArticles({
               <Image
                 unoptimized
                 src={post.thumbnail}
-                alt=""
+                alt={post.title}
                 fill
                 sizes="(min-width: 1024px) 240px, 78vw"
                 className="object-cover transition duration-300 group-hover:scale-105"

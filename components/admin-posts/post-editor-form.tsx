@@ -585,6 +585,7 @@ export function PostEditorForm({
                         <ImagePlus aria-hidden="true" className="size-6 text-[#608a89]" />
                         <CloudinaryUploadButton
                           target="thumbnail"
+                          alt={title}
                           disabled={thumbnailUploading}
                           onUploadingChange={(isUploading) =>
                             setThumbnailUploading(isUploading)
@@ -608,7 +609,7 @@ export function PostEditorForm({
                           <Image
                             unoptimized
                             src={thumbnail}
-                            alt="Selected thumbnail preview"
+                            alt={title}
                             width={1200}
                             height={675}
                             className="mx-auto max-h-64 w-auto rounded-lg object-contain"

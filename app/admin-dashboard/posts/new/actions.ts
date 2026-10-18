@@ -59,6 +59,27 @@ export interface UploadedMediaInput {
   size: number;
   resourceType: "image" | "video";
   folder: CloudinaryUploadFolder;
+  alt?: string;
+}
+
+export async function getCloudinaryUploadConfiguration(): Promise<{
+  cloudName: string;
+  uploadPreset: string;
+}> {
+  const session = await getAdminSession();
+  if (!session) {
+    throw new Error("Your session has expired. Sign in again.");
+  }
+
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME?.trim();
+  const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET?.trim();
+  if (!cloudName || !uploadPreset) {
+    throw new Error(
+      "Cloudinary is not configured. Set the cloud name and unsigned upload preset.",
+    );
+  }
+
+  return { cloudName, uploadPreset };
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -104,7 +125,7 @@ function collectImageUrls(content: JSONContent): string[] {
 }
 
 function isCloudinaryUrl(value: string, resourceType: "image" | "video") {
-  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
   if (!cloudName) return false;
 
   try {
@@ -186,6 +207,7 @@ export async function deletePostAction(
 
     revalidatePath("/admin-dashboard");
     revalidatePath("/admin-dashboard/posts");
+    revalidatePath("/sitemap.xml");
     return { success: true };
   } catch (error) {
     const errorName = error instanceof Error ? error.name : "UnknownError";
@@ -414,8 +436,27 @@ async function savePost(
       postIdToReturn = post._id.toString();
     }
 
+    if (input.thumbnail) {
+      try {
+        await Media.updateOne(
+          {
+            url: input.thumbnail,
+            uploadedBy: new Types.ObjectId(session.userId),
+            mimeType: /^image\//,
+          },
+          { $set: { alt: title } },
+        ).exec();
+      } catch (error) {
+        const errorName = error instanceof Error ? error.name : "UnknownError";
+        console.error(
+          `Thumbnail alt text could not be updated (${errorName}): ${getSafeErrorMessage(error)}`,
+        );
+      }
+    }
+
     revalidatePath("/admin-dashboard");
     revalidatePath("/admin-dashboard/posts");
+    revalidatePath("/sitemap.xml");
     if (postId) revalidatePath(`/admin-dashboard/posts/${postId}/edit`);
     return { success: true, postId: postIdToReturn };
   } catch (error) {
@@ -491,6 +532,8 @@ export async function recordMediaUpload(
     ) ||
     !input.filename.trim() ||
     !input.mimeType.startsWith(`${input.resourceType}/`) ||
+    (input.alt !== undefined &&
+      (typeof input.alt !== "string" || input.alt.length > 300)) ||
     !Number.isSafeInteger(input.size) ||
     input.size <= 0 ||
     !isCloudinaryUrl(input.url, input.resourceType)
@@ -503,6 +546,7 @@ export async function recordMediaUpload(
     await Media.create({
       filename: input.filename.trim(),
       url: input.url,
+      alt: input.alt?.trim() || undefined,
       mimeType: input.mimeType,
       size: input.size,
       uploadedBy: new Types.ObjectId(session.userId),

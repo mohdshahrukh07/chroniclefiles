@@ -177,7 +177,7 @@ export default async function PublicPostPage({
                     unoptimized
                     fill
                     src={thumbnail}
-                    alt=""
+                    alt={post.title}
                     sizes="(min-width: 1280px) 858px, (min-width: 901px) calc(100vw - 430px), (min-width: 768px) calc(100vw - 360px), 100vw"
                     className="object-cover"
                     priority

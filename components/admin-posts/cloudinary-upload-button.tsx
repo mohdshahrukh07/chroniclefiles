@@ -12,6 +12,7 @@ interface CloudinaryUploadButtonProps {
   onUploaded: (url: string) => void;
   onUploadingChange?: (uploading: boolean) => void;
   children: ReactNode;
+  alt?: string;
   className?: string;
   disabled?: boolean;
 }
@@ -21,6 +22,7 @@ export function CloudinaryUploadButton({
   onUploaded,
   onUploadingChange,
   children,
+  alt,
   className,
   disabled = false,
 }: CloudinaryUploadButtonProps) {
@@ -37,7 +39,7 @@ export function CloudinaryUploadButton({
     setIsUploading(true);
     onUploadingChange?.(true);
     try {
-      const url = await uploadToCloudinary(file, target);
+      const url = await uploadToCloudinary(file, target, alt);
       onUploaded(url);
     } catch (uploadError) {
       setError(

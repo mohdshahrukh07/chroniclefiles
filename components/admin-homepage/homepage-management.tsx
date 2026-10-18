@@ -85,7 +85,7 @@ function SelectedPost({
             unoptimized
             fill
             src={post.thumbnail}
-            alt=""
+            alt={post.title}
             sizes="64px"
             className="object-cover"
           />
@@ -446,7 +446,7 @@ export function HomepageManagement({
                                 unoptimized
                                 fill
                                 src={post.thumbnail}
-                                alt=""
+                                alt={post.title}
                                 sizes="56px"
                                 className="object-cover"
                               />

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ImagePlus, Pencil, Plus, Trash2, X } from "lucide-react";
@@ -29,6 +30,9 @@ interface CategoryRow {
 interface CategoryManagementProps {
   username: string;
   categories: CategoryRow[];
+  page: number;
+  totalPages: number;
+  totalCategories: number;
   loadError?: string;
 }
 
@@ -58,6 +62,9 @@ function toSlug(value: string): string {
 export function CategoryManagement({
   username,
   categories,
+  page,
+  totalPages,
+  totalCategories,
   loadError,
 }: CategoryManagementProps) {
   const router = useRouter();
@@ -72,6 +79,14 @@ export function CategoryManagement({
   const [deleteError, setDeleteError] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [notice, setNotice] = useState("");
+  const firstVisiblePage = Math.max(
+    1,
+    Math.min(page - 2, totalPages - 4),
+  );
+  const visiblePages = Array.from(
+    { length: Math.min(5, totalPages) },
+    (_, index) => firstVisiblePage + index,
+  );
 
   function openCreateForm() {
     setEditingCategory(null);
@@ -248,7 +263,7 @@ export function CategoryManagement({
               <div>
                 <h2 id="category-table-title" className="font-bold">All Categories</h2>
                 <p className="mt-1 text-sm text-slate-500">
-                  {categories.length} {categories.length === 1 ? "category" : "categories"}
+                  {totalCategories} {totalCategories === 1 ? "category" : "categories"}
                 </p>
               </div>
             </div>
@@ -341,6 +356,50 @@ export function CategoryManagement({
               </div>
             )}
           </section>
+          {totalPages > 1 && (
+            <nav
+              aria-label="Category list pagination"
+              className="flex flex-wrap items-center justify-between gap-3"
+            >
+              <p className="text-sm text-slate-500">
+                Showing {Math.min((page - 1) * 10 + 1, totalCategories)}–
+                {Math.min(page * 10, totalCategories)} of {totalCategories} categories
+              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                {page > 1 && (
+                  <Link
+                    href={`/admin-dashboard/categories?page=${page - 1}`}
+                    className="inline-flex min-h-11 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#02a95c]"
+                  >
+                    Previous
+                  </Link>
+                )}
+                {visiblePages.map((pageNumber) => (
+                    <Link
+                      key={pageNumber}
+                      href={`/admin-dashboard/categories?page=${pageNumber}`}
+                      aria-current={pageNumber === page ? "page" : undefined}
+                      aria-label={`Page ${pageNumber}`}
+                      className={
+                        pageNumber === page
+                          ? "inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg bg-[#02a95c] px-3 text-sm font-semibold text-white"
+                          : "inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#02a95c]"
+                      }
+                    >
+                      {pageNumber}
+                    </Link>
+                ))}
+                {page < totalPages && (
+                  <Link
+                    href={`/admin-dashboard/categories?page=${page + 1}`}
+                    className="inline-flex min-h-11 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#02a95c]"
+                  >
+                    Next
+                  </Link>
+                )}
+              </div>
+            </nav>
+          )}
         </div>
       </main>
 

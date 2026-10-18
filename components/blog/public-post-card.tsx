@@ -26,7 +26,7 @@ export function PublicPostCard({ post }: { post: PublicPostCardData }) {
           <Image
             unoptimized
             src={post.thumbnail}
-            alt=""
+            alt={post.title}
             width={1200}
             height={675}
             className="size-full object-cover transition duration-300 hover:scale-[1.02]"

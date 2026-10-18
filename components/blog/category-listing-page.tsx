@@ -255,7 +255,7 @@ export function CategoryListingPage({
                     name="q"
                     defaultValue={listing.search}
                     maxLength={100}
-                    placeholder="Search by title or tag..."
+                    placeholder="Search"
                     className="min-h-10 w-full rounded-[4px] border border-[#dce3df] bg-white px-3 text-sm text-[#444] outline-none placeholder:text-[#87918b] focus:border-[#02A95C] focus:ring-2 focus:ring-[#02A95C]/20"
                   />
                 </div>

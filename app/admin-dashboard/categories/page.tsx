@@ -12,6 +12,12 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+const PAGE_SIZE = 10;
+
+interface CategoriesPageProps {
+  searchParams: Promise<{ page?: string }>;
+}
+
 interface CategoryRow {
   id: string;
   name: string;
@@ -21,27 +27,43 @@ interface CategoryRow {
   postCount: number;
 }
 
-export default async function CategoriesPage() {
+export default async function CategoriesPage({
+  searchParams,
+}: CategoriesPageProps) {
   const session = await getAdminSession();
   if (!session) redirect("/admin-dashboard");
 
+  const params = await searchParams;
+  const requestedPage =
+    params.page && /^[1-9]\d*$/.test(params.page) ? Number(params.page) : 1;
+  let page =
+    Number.isSafeInteger(requestedPage) && requestedPage > 0
+      ? requestedPage
+      : 1;
+
   let categories: CategoryRow[] = [];
+  let totalCategories = 0;
   let loadError: string | undefined;
 
   try {
     await connectToDatabase();
-    const [documents, postCounts] = await Promise.all([
-      Category.find({})
-        .select({ name: 1, slug: 1, description: 1, image: 1 })
-        .sort({ name: 1 })
-        .lean()
-        .exec(),
-      Post.aggregate<{ _id: Types.ObjectId; count: number }>([
-        { $match: { category: { $type: "objectId" } } },
-        { $group: { _id: "$category", count: { $sum: 1 } } },
-      ]).exec(),
-    ]);
-
+    const categoryCount = await Category.countDocuments({}).exec();
+    totalCategories = categoryCount;
+    const totalPages = Math.max(1, Math.ceil(totalCategories / PAGE_SIZE));
+    page = Math.min(page, totalPages);
+    const documents = await Category.find({})
+      .select({ name: 1, slug: 1, description: 1, image: 1 })
+      .sort({ name: 1, _id: 1 })
+      .skip((page - 1) * PAGE_SIZE)
+      .limit(PAGE_SIZE)
+      .lean()
+      .exec();
+    const postCounts = documents.length
+      ? await Post.aggregate<{ _id: Types.ObjectId; count: number }>([
+          { $match: { category: { $in: documents.map(({ _id }) => _id) } } },
+          { $group: { _id: "$category", count: { $sum: 1 } } },
+        ]).exec()
+      : [];
     const countsByCategory = new Map(
       postCounts.map(({ _id, count }) => [_id.toString(), count]),
     );
@@ -64,6 +86,9 @@ export default async function CategoriesPage() {
     <CategoryManagement
       username={session.username}
       categories={categories}
+      page={page}
+      totalPages={Math.max(1, Math.ceil(totalCategories / PAGE_SIZE))}
+      totalCategories={totalCategories}
       loadError={loadError}
     />
   );

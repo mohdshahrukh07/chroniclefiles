@@ -194,7 +194,7 @@ export function PostPreview({
                   unoptimized
                   fill
                   src={thumbnail}
-                  alt=""
+                  alt={title}
                   className="object-cover"
                 />
               </div>

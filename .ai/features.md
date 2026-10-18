@@ -77,9 +77,12 @@ Current behavior:
 - `/post/[slug]` renders a published post using the `Designs/Blogpage.html` editorial article layout
 - `/` renders the public Home Page using `Designs/Homepage.html` and five saved featured slots
 - scheduled/future posts are excluded
+- `app/sitemap.ts` dynamically emits the homepage, valid category URLs, and eligible published article URLs using the trusted `SITE_URL`; its data is revalidated after post/category mutations
+- `app/robots.ts` preserves open public crawling, excludes admin/API paths, and references the sitemap only when a valid configured site origin exists
 - article content blocks, including rich text, images, videos, and supported embeds, render in stored order
 - the article sidebar uses real related published posts and Category records
 - article metadata, social cards, and conditional BlogPosting JSON-LD use saved post fields and an explicit configured site origin
+- post thumbnails use the post title as their alt text on public and admin display surfaces; thumbnail uploads and post saves also store the title in the existing Media `alt` field
 - reusable sidebar and inline ad slots are presentation-only and emit no markup or reserved space when ads are disabled/unconfigured
 - Google Tag Manager container `GTM-T9LFSR4Z` is loaded globally from the root layout before hydration; its no-script fallback is placed at the start of `<body>`. Individual tags and consent configuration are managed in GTM.
 
@@ -94,7 +97,7 @@ Relevant files:
 Known limitations:
 - a production HTTPS `SITE_URL` must be configured before canonical links and absolute JSON-LD are emitted
 - Popular ordering uses available existing per-post page-view aggregates and is limited by the analytics collections' retention window; it does not fabricate popularity
-- no sitemap route/file currently exists; public archive links and canonicals use `/blog`, `/category/[slug]`, and `/post/[slug]`
+- sitemap generation requires a valid production HTTPS `SITE_URL`; that deployment value is not configured in the current local environment
 - actual AdSense script, approval, publisher configuration, and manual ad-unit IDs (if used) remain future setup
 
 ## Homepage and Homepage Management
@@ -106,6 +109,7 @@ Current behavior:
 - The `HomepageLayout` model stores five selected post IDs in one primary configuration document.
 - `/admin-dashboard/homepage` is protected by the existing admin session and allows searching, reviewing, replacing, and clearing each selection before saving.
 - `GET` and `PATCH /api/admin/homepage-layout` require an admin session. The PATCH validates eligible published posts, avoids duplicates, and writes only requested fields.
+- The signed admin session cookie is scoped to `/` so it is sent to the protected `/api/admin/homepage-layout` endpoint; login clears the legacy `/admin-dashboard` cookie and sign-out expires both variants. Existing sessions issued before this path fix must sign in again once.
 - The homepage uses the saved selection when eligible and falls back to distinct recent eligible posts for missing or ineligible slots.
 - Homepage carousels are bounded to six popular published posts for Latest Stories and five per real Technology, Education, and Entertainment category. Popularity uses recorded AnalyticsDaily page views; ties and posts without tracked views use publication recency and stable ID ordering. Carousel content is independent of the featured slots, so a featured post may appear again in its category/latest carousel.
 - A valid enabled `AdSlot` replaces the right-bottom story visually without clearing its saved fallback. When ads are disabled or invalid, the saved story returns; if neither exists, no right-bottom block is rendered.

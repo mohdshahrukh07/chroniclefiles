@@ -59,6 +59,14 @@ export function PostsList({
   const [selectedPost, setSelectedPost] = useState<PostRow | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const firstVisiblePage = Math.max(
+    1,
+    Math.min(page - 2, totalPages - 4),
+  );
+  const visiblePages = Array.from(
+    { length: Math.min(5, totalPages) },
+    (_, index) => firstVisiblePage + index,
+  );
   const [isDeleting, setIsDeleting] = useState(false);
 
   const successMessage = notice
@@ -315,14 +323,33 @@ export function PostsList({
               className="flex flex-wrap items-center justify-between gap-3"
             >
               <p className="text-sm text-slate-500">
-                Page {Math.min(page, totalPages)} of {totalPages}
+                Showing {Math.min((page - 1) * 10 + 1, totalPosts)}–
+                {Math.min(page * 10, totalPosts)} of {totalPosts} posts
               </p>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 {page > 1 && (
-                  <Link href={pageHref(filters, page - 1)} className={outlineLinkClass}>
+                  <Link
+                    href={pageHref(filters, page - 1)}
+                    className={outlineLinkClass}
+                  >
                     Previous
                   </Link>
                 )}
+                {visiblePages.map((pageNumber) => (
+                    <Link
+                      key={pageNumber}
+                      href={pageHref(filters, pageNumber)}
+                      aria-current={pageNumber === page ? "page" : undefined}
+                      aria-label={`Page ${pageNumber}`}
+                      className={
+                        pageNumber === page
+                          ? "inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg bg-[#02a95c] px-3 text-sm font-semibold text-white"
+                          : "inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#02a95c]"
+                      }
+                    >
+                      {pageNumber}
+                    </Link>
+                ))}
                 {page < totalPages && (
                   <Link href={pageHref(filters, page + 1)} className={outlineLinkClass}>
                     Next

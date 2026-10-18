@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 10;
 
 interface PostsPageProps {
   searchParams: Promise<{
@@ -42,7 +42,9 @@ export default async function PostsPage({ searchParams }: PostsPageProps) {
     params.category && Types.ObjectId.isValid(params.category)
       ? params.category
       : "";
-  const requestedPage = Number.parseInt(params.page ?? "1", 10);
+  const requestedPage = params.page && /^[1-9]\d*$/.test(params.page)
+    ? Number(params.page)
+    : 1;
   const notice =
     params.notice === "draft-saved" ||
     params.notice === "draft-updated" ||
@@ -94,7 +96,7 @@ export default async function PostsPage({ searchParams }: PostsPageProps) {
     page = Math.min(page, totalPages);
     const documents = await Post.find(filter)
       .select({ title: 1, slug: 1, category: 1, status: 1, updatedAt: 1 })
-      .sort({ updatedAt: -1, _id: -1 })
+      .sort({ createdAt: -1, _id: -1 })
       .skip((page - 1) * PAGE_SIZE)
       .limit(PAGE_SIZE)
       .lean()

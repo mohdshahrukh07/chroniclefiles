@@ -43,7 +43,7 @@ export function Recommendations({
                     <Image
                       unoptimized
                       src={post.thumbnail}
-                      alt=""
+                      alt={post.title}
                       fill
                       sizes="92px"
                       className="object-cover transition duration-300 group-hover:scale-105"

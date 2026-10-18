@@ -38,7 +38,7 @@ function HomepageStoryCard({
           fill
           priority={priority}
           src={post.thumbnail}
-          alt=""
+          alt={post.title}
           sizes={
             isLarge
               ? "(min-width: 1200px) 42vw, (min-width: 900px) 55vw, 65vw"
@@ -126,7 +126,7 @@ function HomepageSidebar({
                         unoptimized
                         fill
                         src={post.thumbnail}
-                        alt=""
+                        alt={post.title}
                         sizes="92px"
                         className="object-cover transition duration-300 group-hover:scale-105"
                       />

@@ -1,4 +1,5 @@
 import {
+  getCloudinaryUploadConfiguration,
   recordMediaUpload,
   type UploadedMediaInput,
 } from "@/app/admin-dashboard/posts/new/actions";
@@ -21,15 +22,11 @@ interface CloudinaryResponse {
 export async function uploadToCloudinary(
   file: File,
   target: CloudinaryUploadTarget,
+  alt?: string,
 ): Promise<string> {
   const { resourceType, folder } = cloudinaryUploadTargets[target];
-  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-  const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
-  if (!cloudName || !uploadPreset) {
-    throw new Error(
-      "Cloudinary is not configured. Set the public cloud name and unsigned upload preset.",
-    );
-  }
+  const { cloudName, uploadPreset } =
+    await getCloudinaryUploadConfiguration();
 
   const formData = new FormData();
   formData.set("file", file);
@@ -68,6 +65,7 @@ export async function uploadToCloudinary(
     size: uploaded.bytes,
     resourceType,
     folder,
+    ...(alt?.trim() ? { alt: alt.trim().slice(0, 300) } : {}),
   };
   const mediaResult = await recordMediaUpload(mediaInput);
   if (!mediaResult.success) {

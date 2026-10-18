@@ -107,7 +107,7 @@ export function HomepageCarousel({
                   unoptimized
                   fill
                   src={post.thumbnail}
-                  alt=""
+                  alt={post.title}
                   sizes="(min-width: 900px) 280px, (min-width: 560px) 42vw, 70vw"
                   className="object-cover transition duration-500 group-hover:scale-[1.045]"
                 />

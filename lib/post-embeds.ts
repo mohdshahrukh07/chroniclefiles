@@ -7,9 +7,6 @@ export interface ParsedPostEmbed {
   embedId?: string;
 }
 
-const CLOUDINARY_CLOUD_NAME =
-  process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? "";
-
 function isTrustedHttpsUrl(value: string): URL | null {
   try {
     const url = new URL(value);
@@ -30,11 +27,8 @@ export function parsePostEmbed(
 
   if (platform === "cloudinary") {
     if (
-      !CLOUDINARY_CLOUD_NAME ||
       hostname !== "res.cloudinary.com" ||
-      !url.pathname.startsWith(
-        `/${CLOUDINARY_CLOUD_NAME}/video/upload/`,
-      )
+      !/^\/[^/]+\/video\/upload\//.test(url.pathname)
     ) {
       return null;
     }

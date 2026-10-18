@@ -119,8 +119,8 @@ Environment variables used or expected by the codebase include:
 - ADMIN_USERNAME
 - ADMIN_PASSWORD
 - ADMIN_SESSION_SECRET
-- NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
-- NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
+- CLOUDINARY_CLOUD_NAME
+- CLOUDINARY_UPLOAD_PRESET
 
 No secret values are included in this documentation.
 

@@ -90,7 +90,7 @@ These files should be treated as the current handoff record for the project.
 ## Safety rules
 
 - Never copy database connection strings, passwords, Cloudinary secrets, API keys, or session secrets.
-- Document environment variable names only, for example: MONGODB_URI, ADMIN_SESSION_SECRET, NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME.
+- Document environment variable names only, for example: MONGODB_URI, ADMIN_SESSION_SECRET, CLOUDINARY_CLOUD_NAME.
 - Do not expose private values in .ai docs or any code comments.
 
 ## Verification expectation

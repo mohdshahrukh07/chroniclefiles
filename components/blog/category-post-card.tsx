@@ -30,7 +30,7 @@ export function CategoryPostCard({
             unoptimized
             fill
             src={post.thumbnail}
-            alt=""
+            alt={post.title}
             sizes="(min-width: 1280px) 300px, (min-width: 640px) 45vw, 100vw"
             loading={eager ? "eager" : "lazy"}
             className="object-cover transition duration-500 group-hover:scale-[1.045]"

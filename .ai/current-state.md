@@ -82,6 +82,27 @@ Relevant files:
 - app/admin-dashboard/posts/page.tsx
 - components/admin-posts/posts-list.tsx
 
+### Sitemap and crawler directives
+
+Current status: Implemented; requires deployment site-origin configuration.
+
+What works:
+- `/sitemap.xml` is generated from the MongoDB Category and Post collections on each request
+- includes `/`, valid category routes, and published article routes that are not future-scheduled
+- uses the configured `SITE_URL`, never the incoming request host
+- sitemap path is revalidated after post and category mutations
+- `/robots.txt` allows public crawling, disallows admin/API paths, and references the sitemap when `SITE_URL` is valid
+
+Known limitation:
+- configure `SITE_URL` to the production HTTPS origin before deployment; sitemap generation explicitly fails without it rather than publishing incorrect absolute URLs
+
+Relevant files:
+- app/sitemap.ts
+- app/robots.ts
+- lib/public-site-config.ts
+- app/admin-dashboard/posts/new/actions.ts
+- app/admin-dashboard/categories/actions.ts
+
 ### Create Post / Edit Post form
 
 Current status: Working with the current architecture.
@@ -196,6 +217,7 @@ Current status: Implemented in code; staging persistence and ad rendering remain
 
 - `/` follows `Designs/Homepage.html` and renders featured posts, Latest, Technology, Education, Entertainment, recommendations, real category links, and the footer.
 - `HomepageLayout` stores the five featured post IDs; the admin page and GET/PATCH API are protected by the existing admin session.
+- The admin session cookie is scoped to `/` so browser requests to the protected `/api/admin/homepage-layout` route include it; login clears the legacy `/admin-dashboard` cookie and sign-out expires both paths. Existing sessions issued before the path fix must sign in again once.
 - The API only accepts eligible published posts and partial PATCHes preserve all untouched slots. Admin choices are searchable, reviewable, and can be cleared before saving.
 - Ads use the existing enablement and publisher validation. When configured, the square right-column AdSlot replaces only the `rightBottomPostId` card; the ID stays persisted for fallback.
 - Public fallbacks avoid duplicates and exclude drafts and future posts. If no eligible post/ad exists, the right-bottom block is omitted.
@@ -338,6 +360,7 @@ What works:
 
 Known verification/setup:
 - Canonical URLs require the verified production `SITE_URL`, which is not present in checked-in configuration.
-- No sitemap route/file was found, so sitemap consistency could not be checked.
+- Dynamic sitemap XML and robots output were verified against a temporary test-only origin; the configured production `SITE_URL` is still unset.
+- The connected database currently has zero Post records, so draft/future filtering and publication/deletion refresh behavior were not exercised with actual content changes; query predicates and mutation revalidation hooks were checked, and no database records were modified.
 - Available browser data contains fewer than nine eligible records; second-page pagination and draft/future filtering were verified from code, not exercised using modified records.
 - No post/category content was written or modified during browser verification; analytics requests were intercepted.
