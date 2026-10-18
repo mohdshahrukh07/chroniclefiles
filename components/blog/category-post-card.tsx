@@ -1,12 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { PublicPostCardData } from "@/components/blog/public-post-card";
-
-function getValidPublishedDate(value?: string): Date | null {
-  if (!value) return null;
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date;
-}
+import { formatRelativeAge } from "@/lib/format-relative-age";
 
 export function CategoryPostCard({
   post,
@@ -15,7 +10,7 @@ export function CategoryPostCard({
   post: PublicPostCardData;
   eager?: boolean;
 }) {
-  const publishedDate = getValidPublishedDate(post.publishedAt);
+  const publishedAge = formatRelativeAge(post.publishedAt);
 
   return (
     <article className="group overflow-hidden rounded-[5px] border border-[#e8ece9] bg-white transition duration-300 hover:-translate-y-1 hover:shadow-[0_12px_28px_rgba(20,50,35,.09)]">
@@ -41,14 +36,12 @@ export function CategoryPostCard({
             <span className="inline-flex items-center rounded-[2px] bg-[#E8F2F4] px-2 py-1 text-[10px] font-extrabold uppercase tracking-[.07em] text-[#367064]">
               {post.categoryName}
             </span>
-            {publishedDate && (
+            {publishedAge && post.publishedAt && (
               <time
-                dateTime={publishedDate.toISOString()}
+                dateTime={post.publishedAt}
                 className="text-[10px] text-white/85"
               >
-                {new Intl.DateTimeFormat("en", {
-                  dateStyle: "medium",
-                }).format(publishedDate)}
+                {publishedAge}
               </time>
             )}
           </div>

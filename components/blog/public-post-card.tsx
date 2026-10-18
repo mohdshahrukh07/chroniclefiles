@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { formatRelativeAge } from "@/lib/format-relative-age";
 
 export interface PublicPostCardData {
   id: string;
@@ -13,6 +14,8 @@ export interface PublicPostCardData {
 }
 
 export function PublicPostCard({ post }: { post: PublicPostCardData }) {
+  const publishedAge = formatRelativeAge(post.publishedAt);
+
   return (
     <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:-translate-y-0.5 hover:shadow-md">
       {post.thumbnail && (
@@ -59,14 +62,12 @@ export function PublicPostCard({ post }: { post: PublicPostCardData }) {
         <p className="mt-3 line-clamp-3 text-sm leading-7 text-slate-600">
           {post.excerpt}
         </p>
-        {post.publishedAt && (
+        {publishedAge && post.publishedAt && (
           <time
             dateTime={post.publishedAt}
             className="mt-5 block text-xs text-slate-500"
           >
-            {new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(
-              new Date(post.publishedAt),
-            )}
+            {publishedAge}
           </time>
         )}
       </div>
