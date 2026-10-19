@@ -3,7 +3,8 @@ import "server-only";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 
-const COOKIE_NAME = "chroniclefiles_admin_session";
+const COOKIE_NAME = "chroniclefiles_admin_session_v2";
+const LEGACY_COOKIE_NAME = "chroniclefiles_admin_session";
 const SESSION_DURATION_SECONDS = 60 * 60 * 8;
 const COOKIE_PATH = "/";
 const LEGACY_COOKIE_PATH = "/admin-dashboard";
@@ -77,7 +78,7 @@ export async function createAdminSession(
 
   const cookieStore = await cookies();
   cookieStore.set(COOKIE_NAME, token, cookieOptions(SESSION_DURATION_SECONDS));
-  cookieStore.set(COOKIE_NAME, "", {
+  cookieStore.set(LEGACY_COOKIE_NAME, "", {
     ...cookieOptions(0),
     path: LEGACY_COOKIE_PATH,
   });
@@ -133,7 +134,7 @@ export async function getAdminSession(): Promise<AdminSession | null> {
 export async function clearAdminSession(): Promise<void> {
   const cookieStore = await cookies();
   cookieStore.set(COOKIE_NAME, "", cookieOptions(0));
-  cookieStore.set(COOKIE_NAME, "", {
+  cookieStore.set(LEGACY_COOKIE_NAME, "", {
     ...cookieOptions(0),
     path: LEGACY_COOKIE_PATH,
   });
