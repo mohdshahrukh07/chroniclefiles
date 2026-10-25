@@ -34,7 +34,7 @@ The repository currently contains the following actual configuration and depende
 - Tailwind CSS: 4.x
 - shadcn/ui: project uses shadcn-compatible primitives and component structure, with a custom design system layered on top
 - MongoDB: Mongoose ODM 9.10.4
-- Tiptap: 3.31.4 with StarterKit, Image, and Link extensions
+- Tiptap: 3.31.4 with StarterKit, Image, Link, color/highlight/text-style, list/task, subscript/superscript, table, and text-alignment extensions; an editable callout node is implemented locally
 - Cloudinary: next-cloudinary 6.19.3 and unsigned upload flow via Cloudinary API
 - Authentication: custom admin session cookie system using Node crypto, scrypt, signed payload, and HTTP-only cookies
 - UI iconography: lucide-react 1.51.0

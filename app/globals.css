@@ -137,3 +137,44 @@
     font-family: var(--font-newsreader);
   }
 }
+
+.post-content-editor .tiptap img[data-align="left"] {
+  display: block;
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.post-content-editor .tiptap img[data-align="center"] {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.post-content-editor .tiptap img[data-align="right"] {
+  display: block;
+  margin-left: auto;
+  margin-right: 0;
+}
+
+.post-content-editor .tiptap table {
+  min-width: 32rem;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.post-content-editor .tiptap th,
+.post-content-editor .tiptap td {
+  border: 1px solid #cbd5e1;
+  padding: 0.5rem;
+  vertical-align: top;
+}
+
+.post-content-editor .tiptap th {
+  background: #f1f5f9;
+  font-weight: 600;
+}
+
+.post-content-editor .tiptap ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0;
+}

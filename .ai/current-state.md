@@ -111,9 +111,12 @@ What works:
 - title, slug, excerpt, thumbnail, category, tags, draft/publish status fields
 - dynamic content block insertion and deletion
 - rich text block editing via Tiptap
+- formatting, alignment, task/nested lists, tables, callouts, safe links, and inline Cloudinary images
 - image upload blocks and embed blocks
 - preview modal
 - save draft and publish actions
+
+Tiptap content remains ordered JSON. The editor, admin preview, and public article renderer support the same new marks/nodes; image, link, and callout attributes are sanitized for rendering. Added extensions are official, MIT-licensed Tiptap 3.31.4 packages. Live database persistence and Cloudinary upload still require staging verification.
 
 Relevant files:
 - components/admin-posts/post-editor-form.tsx

@@ -224,6 +224,8 @@ Public users should only see content that is intended to be publicly published.
 
 Draft or unpublished content must not accidentally appear on public pages.
 
+Rich-text content is stored as the existing ordered Tiptap JSON. When changing supported marks or nodes, keep the editor, shared content validation, admin preview, and public renderer compatible, and preserve legacy JSON. Prefer official free extensions already compatible with the installed Tiptap version; do not use paid Pro features without an explicit requirement.
+
 ---
 
 # 8. Public Website

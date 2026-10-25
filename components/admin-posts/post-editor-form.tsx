@@ -775,6 +775,14 @@ export function PostEditorForm({
                                 : current,
                             )
                           }
+                          onImageUploadingChange={(uploading) =>
+                            setUploadingContentImages((current) => {
+                              const next = new Set(current);
+                              if (uploading) next.add(block.id);
+                              else next.delete(block.id);
+                              return next;
+                            })
+                          }
                           ariaLabel={`Rich text editor ${index + 1}`}
                         />
                       )}

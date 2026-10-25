@@ -63,6 +63,26 @@ Important details:
 Known limitations:
 - legacy separate video data may not retain its original position among content blocks
 
+## Tiptap Rich-text Editor
+
+Status: Implemented in code; database persistence and live Cloudinary upload remain staging checks
+
+Current behavior:
+- Stores editor content as the existing ordered Tiptap JSON without changing the Post schema.
+- Supports StarterKit formatting, text color/highlight/font sizes/alignment, H2/H3, nested and task lists, superscript/subscript, tables, editable Note/Warning/Tip/Important callouts, and safe links.
+- Supports Cloudinary inline image upload with adjustable width, alignment, alt text, and caption.
+- Admin preview and public article rendering support the added marks/nodes while filtering unsafe links, image values, and callout attributes.
+
+Relevant files:
+- components/editor/post-content-editor.tsx
+- components/admin-posts/post-preview.tsx
+- components/blog/public-post-content.tsx
+- lib/tiptap-content.ts
+
+Compatibility and limits:
+- New extension packages use official Tiptap 3.31.4 extensions with MIT licenses; no Pro or community extension is required.
+- Existing JSON remains valid. Paid-only features such as Tiptap drag-resize were not added.
+
 ## Public Blog
 
 Status: Implemented in code; production/browser verification remains pending

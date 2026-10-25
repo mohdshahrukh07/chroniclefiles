@@ -60,13 +60,15 @@ export function CloudinaryUploadButton({
         ref={inputRef}
         id={inputId}
         type="file"
+        aria-hidden="true"
+        tabIndex={-1}
         accept={
           configuration.resourceType === "image"
             ? "image/*"
             : "video/mp4,video/webm,video/quicktime,video/x-m4v"
         }
         onChange={(event) => void handleFileChange(event)}
-        className="sr-only"
+        className="hidden"
       />
       <button
         type="button"
