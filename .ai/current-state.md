@@ -129,8 +129,11 @@ Current status: Implemented in the current codebase as the canonical model.
 
 What works:
 - article content is treated as a single ordered array where each item preserves insertion position
+- every content card can be reordered by mouse/touch drag handle or keyboard-accessible Move Up/Move Down controls
+- optional stable string IDs keep editor/component identity through moves and are saved with each content item
 - embed content is stored as an ordered content item, not as a separate append-only array
 - preview rendering uses the same ordered content array as editor state
+- public content renders the same ordered array; an optional inline ad is selected separately after substantial rich text, never after every block
 
 Relevant files:
 - lib/post-content.ts
@@ -298,7 +301,9 @@ Status: Needs verification.
 
 What to verify:
 - Add Content menu adds blocks in the correct sequence
-- insert position is preserved
+- drag/drop and Move Up/Move Down work across component types and preserve IDs and payloads
+- preview and public rendering retain the same order as the content array
+- ads appear only when configured and only after a substantial text boundary
 - image fields and embed fields remain functional
 - responsive admin layout still works at mobile and desktop widths
 

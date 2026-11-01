@@ -210,22 +210,6 @@ function PreviewNode({
   }
 }
 
-function PreviewAdStripe() {
-  return (
-    <aside
-      aria-label="Advertisement placement preview"
-      className="my-10 flex min-h-24 items-center justify-center rounded-xl border border-green-100 bg-gradient-to-r from-[#027a49] via-[#02a95c] to-[#608a89] px-5 py-5 text-center text-white shadow-sm sm:my-12 sm:min-h-28 sm:px-8"
-    >
-      <div>
-        <p className="text-xs font-bold uppercase tracking-[0.2em]">Advertisement</p>
-        <p className="mt-2 text-sm font-medium text-white/90">
-          Reserved placement - preview only
-        </p>
-      </div>
-    </aside>
-  );
-}
-
 export function PostPreview({
   open,
   onClose,
@@ -300,7 +284,7 @@ export function PostPreview({
             <div className="my-8 border-t border-slate-200" />
             <div className="[&_a]:break-words">
               {blocks.map((block, index) => {
-                const key = `preview-${index}`;
+                const key = block.id ?? `preview-${index}`;
                 const content = (() => {
                   if (block.type === "richText") {
                     return (
@@ -386,9 +370,6 @@ export function PostPreview({
                 return (
                   <Fragment key={key}>
                     {content}
-                    {(index + 1) % 4 === 0 && index < blocks.length - 1 && (
-                      <PreviewAdStripe />
-                    )}
                   </Fragment>
                 );
               })}

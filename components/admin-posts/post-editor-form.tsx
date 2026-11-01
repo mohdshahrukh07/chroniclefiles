@@ -8,12 +8,36 @@ import {
   Check,
   ChevronDown,
   Eye,
+  GripVertical,
   ImagePlus,
   LoaderCircle,
+  MoveDown,
+  MoveUp,
   Save,
   Send,
   Trash2,
 } from "lucide-react";
+import {
+  DndContext,
+  KeyboardSensor,
+  MouseSensor,
+  TouchSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type DragOverEvent,
+  type DragStartEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { MobileAdminNavigation } from "@/components/admin-dashboard/mobile-admin-navigation";
 import { AdminSidebar } from "@/components/admin-dashboard/admin-navigation";
@@ -31,9 +55,7 @@ import type {
   TiptapDocument,
 } from "@/models/post";
 import { parsePostEmbed } from "@/lib/post-embeds";
-import {
-  postContentHasData,
-} from "@/lib/post-content";
+import { postContentHasData } from "@/lib/post-content";
 import { PostPreview } from "@/components/admin-posts/post-preview";
 
 interface CategoryOption {
@@ -73,16 +95,16 @@ type FormField =
   | "thumbnail";
 
 type ContentBlock =
-  | { id: number; type: "rich-text"; content: JSONContent }
-  | { id: number; type: "image"; url: string; alt: string }
+  | { id: string; type: "rich-text"; content: JSONContent }
+  | { id: string; type: "image"; url: string; alt: string }
   | {
-      id: number;
+      id: string;
       type: "heading2" | "heading3" | "quote" | "bullet" | "numbered";
       text: string;
     }
-  | { id: number; type: "link"; text: string; url: string }
+  | { id: string; type: "link"; text: string; url: string }
   | {
-      id: number;
+      id: string;
       type: "embed";
       platform: PostEmbedPlatform | "";
       url: string;
@@ -91,7 +113,7 @@ type ContentBlock =
       isUploading: boolean;
       error?: string;
     }
-    | { id: number; type: "hr" };
+    | { id: string; type: "hr" };
 
 type NewContentBlockType = ContentBlock["type"];
 
@@ -109,8 +131,14 @@ function toSlug(value: string) {
 }
 
 function initialContentBlocks(content: PostContentItem[] = []): ContentBlock[] {
+  const usedIds = new Set<string>();
   return content.map((item, index) => {
-    const id = index + 1;
+    let id =
+      typeof item.id === "string" && item.id.trim()
+        ? item.id
+        : `legacy-content-${index + 1}`;
+    while (usedIds.has(id)) id = `${id}-legacy`;
+    usedIds.add(id);
     if (item.type === "richText") {
       return {
         id,
@@ -135,33 +163,164 @@ function initialContentBlocks(content: PostContentItem[] = []): ContentBlock[] {
 function contentBlocksToPostContent(blocks: ContentBlock[]): PostContentItem[] {
   return blocks.flatMap((block): PostContentItem[] => {
     if (block.type === "rich-text") {
-      return [{
-        type: "richText",
-        content: JSON.parse(JSON.stringify(block.content)) as TiptapDocument,
-      }];
+      return [
+        {
+          id: block.id,
+          type: "richText",
+          content: JSON.parse(JSON.stringify(block.content)) as TiptapDocument,
+        },
+      ];
     }
     if (block.type === "image") {
       return block.url.trim()
-        ? [{ type: "image", url: block.url.trim(), ...(block.alt ? { alt: block.alt } : {}) }]
+        ? [
+            {
+              id: block.id,
+              type: "image",
+              url: block.url.trim(),
+              ...(block.alt ? { alt: block.alt } : {}),
+            },
+          ]
         : [];
     }
     if (block.type === "embed") {
       if (!block.platform) return [];
       const parsed = parsePostEmbed(block.platform, block.url);
       return parsed
-        ? [{ type: "embed", ...parsed, ...(block.title ? { title: block.title } : {}) }]
+        ? [
+            {
+              id: block.id,
+              type: "embed",
+              ...parsed,
+              ...(block.title ? { title: block.title } : {}),
+            },
+          ]
         : [];
     }
-    if (block.type === "hr") return [{ type: "hr" }];
+    if (block.type === "hr") return [{ id: block.id, type: "hr" }];
     if (block.type === "link") {
       return block.text.trim() && block.url.trim()
-        ? [{ type: "link", text: block.text.trim(), url: block.url.trim() }]
+        ? [
+            {
+              id: block.id,
+              type: "link",
+              text: block.text.trim(),
+              url: block.url.trim(),
+            },
+          ]
         : [];
     }
     return block.text.trim()
-      ? [{ type: block.type, text: block.text.trim() }]
+      ? [{ id: block.id, type: block.type, text: block.text.trim() }]
       : [];
   });
+}
+
+function SortableContentBlock({
+  id,
+  index,
+  count,
+  title,
+  dropIndicator,
+  onMoveUp,
+  onMoveDown,
+  onRemove,
+  children,
+}: {
+  id: string;
+  index: number;
+  count: number;
+  title: string;
+  dropIndicator: "before" | "after" | null;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+  onRemove: () => void;
+  children: ReactNode;
+}) {
+  const {
+    attributes,
+    isDragging,
+    listeners,
+    setActivatorNodeRef,
+    setNodeRef,
+    transform,
+    transition,
+  } = useSortable({ id });
+
+  return (
+    <article
+      ref={setNodeRef}
+      data-content-id={id}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      role="listitem"
+      className={`relative rounded-xl border bg-slate-50 p-4 ${
+        isDragging
+          ? "z-10 border-[#02a95c] opacity-60 shadow-lg ring-2 ring-green-100"
+          : "border-slate-200"
+      }`}
+    >
+      {dropIndicator === "before" && (
+        <span
+          aria-hidden="true"
+          className="absolute -top-2 left-2 right-2 z-20 h-1 rounded-full bg-[#02a95c] shadow-[0_0_0_3px_rgba(2,169,92,0.12)]"
+        />
+      )}
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-2">
+          <button
+            ref={setActivatorNodeRef}
+            type="button"
+            {...attributes}
+            {...listeners}
+            aria-label={`Drag ${title} component`}
+            title="Drag to reorder"
+            className="inline-flex size-11 shrink-0 cursor-grab touch-none items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:border-[#02a95c] hover:text-[#02a95c] active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#02a95c]"
+          >
+            <GripVertical aria-hidden="true" className="size-5" />
+          </button>
+          <h3 className="truncate text-xs font-bold uppercase tracking-wide text-[#608a89]">
+            {index + 1}. {title}
+          </h3>
+        </div>
+        <div className="flex flex-wrap items-center justify-end gap-1">
+          <button
+            type="button"
+            onClick={onMoveUp}
+            disabled={index === 0}
+            aria-label={`Move ${title} up`}
+            className="inline-flex size-11 items-center justify-center rounded-lg text-slate-600 hover:bg-green-50 hover:text-[#02a95c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#02a95c] disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <MoveUp aria-hidden="true" className="size-4" />
+          </button>
+          <button
+            type="button"
+            onClick={onMoveDown}
+            disabled={index === count - 1}
+            aria-label={`Move ${title} down`}
+            className="inline-flex size-11 items-center justify-center rounded-lg text-slate-600 hover:bg-green-50 hover:text-[#02a95c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#02a95c] disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <MoveDown aria-hidden="true" className="size-4" />
+          </button>
+          <button
+            type="button"
+            onClick={onRemove}
+            className="inline-flex min-h-11 items-center gap-2 rounded-lg px-3 text-xs font-semibold text-red-600 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            aria-label={`Remove content field ${index + 1}`}
+          >
+            <Trash2 aria-hidden="true" className="size-4" />
+            Remove
+          </button>
+        </div>
+      </div>
+      {children}
+      {dropIndicator === "after" && (
+        <span
+          aria-hidden="true"
+          className="absolute -bottom-2 left-2 right-2 z-20 h-1 rounded-full bg-[#02a95c] shadow-[0_0_0_3px_rgba(2,169,92,0.12)]"
+        />
+      )}
+    </article>
+  );
 }
 
 function isSafeLink(value: string): boolean {
@@ -189,7 +348,7 @@ export function PostEditorForm({
   const [excerpt, setExcerpt] = useState(initialPost?.excerpt ?? "");
   const [thumbnail, setThumbnail] = useState(initialPost?.thumbnail ?? "");
   const [thumbnailUploading, setThumbnailUploading] = useState(false);
-  const [uploadingContentImages, setUploadingContentImages] = useState<Set<number>>(
+  const [uploadingContentImages, setUploadingContentImages] = useState<Set<string>>(
     () => new Set(),
   );
   const [category, setCategory] = useState(initialPost?.category ?? "");
@@ -202,10 +361,9 @@ export function PostEditorForm({
   const [contentBlocks, setContentBlocks] = useState<ContentBlock[]>(() =>
     initialContentBlocks(initialPost?.content),
   );
-  const [nextContentBlockId, setNextContentBlockId] = useState(
-    () => initialContentBlocks(initialPost?.content).length + 1,
-  );
   const [isContentMenuOpen, setIsContentMenuOpen] = useState(false);
+  const [activeContentBlockId, setActiveContentBlockId] = useState<string | null>(null);
+  const [overContentBlockId, setOverContentBlockId] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<FormField, string>>>({});
   const [formMessage, setFormMessage] = useState("");
   const [saveSucceeded, setSaveSucceeded] = useState(false);
@@ -213,6 +371,13 @@ export function PostEditorForm({
   const [isPending, startTransition] = useTransition();
   const [savingStatus, setSavingStatus] = useState<"draft" | "published" | null>(null);
   const previewContent = contentBlocksToPostContent(contentBlocks);
+  const sensors = useSensors(
+    useSensor(MouseSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 180, tolerance: 8 },
+    }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   function clearFieldError(field: FormField) {
     setFieldErrors((errors) => ({ ...errors, [field]: undefined }));
@@ -221,7 +386,7 @@ export function PostEditorForm({
   }
 
   function updateContentBlock(
-    id: number,
+    id: string,
     update: (block: ContentBlock) => ContentBlock,
   ) {
     setContentBlocks((blocks) =>
@@ -244,7 +409,7 @@ export function PostEditorForm({
         }));
         return;
       }
-      const id = nextContentBlockId;
+      const id = crypto.randomUUID();
       setContentBlocks((blocks) => [
         ...blocks,
         {
@@ -255,11 +420,10 @@ export function PostEditorForm({
           isUploading: false,
         },
       ]);
-      setNextContentBlockId((current) => current + 1);
       return;
     }
 
-    const id = nextContentBlockId;
+    const id = crypto.randomUUID();
     const block: ContentBlock =
       type === "rich-text"
         ? { id, type, content: { type: "doc", content: [] } }
@@ -272,7 +436,44 @@ export function PostEditorForm({
               : { id, type, text: "" };
 
     setContentBlocks((blocks) => [...blocks, block]);
-    setNextContentBlockId((current) => current + 1);
+  }
+
+  function reorderContentBlock(activeId: string, overId: string) {
+    setContentBlocks((blocks) => {
+      const fromIndex = blocks.findIndex((block) => block.id === activeId);
+      const toIndex = blocks.findIndex((block) => block.id === overId);
+      if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) return blocks;
+      return arrayMove(blocks, fromIndex, toIndex);
+    });
+    setFormMessage("");
+    setSaveSucceeded(false);
+  }
+
+  function moveContentBlock(id: string, offset: -1 | 1) {
+    setContentBlocks((blocks) => {
+      const fromIndex = blocks.findIndex((block) => block.id === id);
+      const toIndex = fromIndex + offset;
+      if (fromIndex < 0 || toIndex < 0 || toIndex >= blocks.length) return blocks;
+      return arrayMove(blocks, fromIndex, toIndex);
+    });
+    setFormMessage("");
+    setSaveSucceeded(false);
+  }
+
+  function handleContentDragStart(event: DragStartEvent) {
+    setActiveContentBlockId(String(event.active.id));
+  }
+
+  function handleContentDragOver(event: DragOverEvent) {
+    setOverContentBlockId(event.over ? String(event.over.id) : null);
+  }
+
+  function handleContentDragEnd(event: DragEndEvent) {
+    if (event.over) {
+      reorderContentBlock(String(event.active.id), String(event.over.id));
+    }
+    setActiveContentBlockId(null);
+    setOverContentBlockId(null);
   }
 
   function validateBeforeSave(nextStatus: "draft" | "published"): boolean {
@@ -666,7 +867,7 @@ export function PostEditorForm({
                         {[
                           ["rich-text", "Rich Text Editor"],
                           ["image", "Image"],
-                          ["embed", "Embed"],
+                          ["embed", "Video / Embed URL"],
                           ["heading2", "H2"],
                           ["heading3", "H3"],
                           ["bullet", "Bullet List"],
@@ -715,16 +916,26 @@ export function PostEditorForm({
                   </p>
                 )}
 
-                <div className="space-y-4">
-                  {contentBlocks.map((block, index) => (
-                    <article
-                      key={block.id}
-                      className="rounded-xl border border-slate-200 bg-slate-50 p-4"
-                    >
-                      <div className="mb-3 flex items-center justify-between gap-3">
-                        <h3 className="text-xs font-bold uppercase tracking-wide text-[#608a89]">
-                          {index + 1}.{" "}
-                          {block.type === "rich-text"
+                <DndContext
+                  id="post-content-sortable"
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragStart={handleContentDragStart}
+                  onDragOver={handleContentDragOver}
+                  onDragEnd={handleContentDragEnd}
+                  onDragCancel={() => {
+                    setActiveContentBlockId(null);
+                    setOverContentBlockId(null);
+                  }}
+                >
+                  <SortableContext
+                    items={contentBlocks.map((block) => block.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div className="space-y-4" role="list" aria-label="Ordered article content fields">
+                      {contentBlocks.map((block, index) => {
+                        const blockTitle =
+                          block.type === "rich-text"
                             ? "Rich Text Editor"
                             : block.type === "image"
                               ? "Image"
@@ -739,31 +950,48 @@ export function PostEditorForm({
                                       : block.type === "hr"
                                         ? "Horizontal Rule"
                                         : block.type === "embed"
-                                          ? "Embed"
+                                          ? "Video / Embed"
                                           : block.type === "link"
                                             ? "Link"
-                                            : "Quote"}
-                        </h3>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setContentBlocks((blocks) =>
-                              blocks.filter((item) => item.id !== block.id),
-                            );
-                            setUploadingContentImages((current) => {
-                              const next = new Set(current);
-                              next.delete(block.id);
-                              return next;
-                            });
-                            clearFieldError("content");
-                          }}
-                          className="inline-flex min-h-11 items-center gap-2 rounded-lg px-3 text-xs font-semibold text-red-600 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-                          aria-label={`Remove content field ${index + 1}`}
-                        >
-                          <Trash2 aria-hidden="true" className="size-4" />
-                          Remove
-                        </button>
-                      </div>
+                                            : "Quote";
+                        const activeIndex = contentBlocks.findIndex(
+                          (item) => item.id === activeContentBlockId,
+                        );
+                        const overIndex = contentBlocks.findIndex(
+                          (item) => item.id === overContentBlockId,
+                        );
+                        const dropIndicator =
+                          block.id !== activeContentBlockId &&
+                          block.id === overContentBlockId &&
+                          activeIndex !== -1 &&
+                          overIndex !== -1
+                            ? activeIndex < overIndex
+                              ? "after"
+                              : "before"
+                            : null;
+
+                        return (
+                          <SortableContentBlock
+                            key={block.id}
+                            id={block.id}
+                            index={index}
+                            count={contentBlocks.length}
+                            title={blockTitle}
+                            dropIndicator={dropIndicator}
+                            onMoveUp={() => moveContentBlock(block.id, -1)}
+                            onMoveDown={() => moveContentBlock(block.id, 1)}
+                            onRemove={() => {
+                              setContentBlocks((blocks) =>
+                                blocks.filter((item) => item.id !== block.id),
+                              );
+                              setUploadingContentImages((current) => {
+                                const next = new Set(current);
+                                next.delete(block.id);
+                                return next;
+                              });
+                              clearFieldError("content");
+                            }}
+                          >
 
                       {block.type === "rich-text" && (
                         <PostContentEditor
@@ -1077,9 +1305,12 @@ export function PostEditorForm({
                           {block.error && <FieldError>{block.error}</FieldError>}
                         </div>
                       )}
-                    </article>
-                  ))}
-                </div>
+                          </SortableContentBlock>
+                        );
+                      })}
+                    </div>
+                  </SortableContext>
+                </DndContext>
 
                 {fieldErrors.content && (
                   <FieldError>{fieldErrors.content}</FieldError>

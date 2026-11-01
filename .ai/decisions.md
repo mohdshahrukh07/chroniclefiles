@@ -148,6 +148,9 @@ Alternatives considered:
 
 Current implementation:
 - `contentBlocksToPostContent()` and `normalizePostContent()` use a single ordered item array
+- drag-and-drop and keyboard Move Up/Move Down reorder the complete array entry without editing its payload
+- optional per-item string IDs preserve editor identity and are backward-compatible inside the existing mixed content field; no Post schema migration is required
+- inline ad placement is separate from editorial content and uses a conservative substantial-text boundary rule
 
 ## Decision: maximum 2 embeds
 

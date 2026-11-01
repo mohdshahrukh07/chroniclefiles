@@ -4,6 +4,7 @@ import type { JSONContent } from "@tiptap/core";
 import type { PostContentItem } from "@/models/post";
 import { PostEmbedRenderer } from "@/components/post-embed-renderer";
 import { AdSlot } from "@/components/blog/ad-slot";
+import { getInlineAdAfterBlockIndex } from "@/lib/post-content";
 import {
   safeCalloutKind,
   safeFontSize,
@@ -243,16 +244,15 @@ export function PublicPostContent({
 }: {
   blocks: PostContentItem[];
 }) {
+  const inlineAdIndex = getInlineAdAfterBlockIndex(blocks);
   return (
     <div className="mt-[26px] font-sans text-[17px] leading-[1.9] text-[#4b554f] max-[720px]:text-base [&_a]:break-words">
       {blocks.map((block, index) => {
-        const key = `article-${index}`;
-        const ad = (
-          <AdSlot
-            format="inline"
-            placement={`article-content-block-${index + 1}`}
-          />
-        );
+        const key = block.id ?? `article-${index}`;
+        const ad =
+          index === inlineAdIndex ? (
+            <AdSlot format="inline" placement="article-after-substantial-content" />
+          ) : null;
         if (block.type === "richText") {
           return (
             <Fragment key={key}>

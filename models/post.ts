@@ -15,7 +15,7 @@ export type PostEmbedPlatform =
   | "facebook"
   | "tiktok";
 
-export type PostContentItem =
+export type PostContentItem = (
   | { type: "richText"; content: TiptapDocument }
   | { type: "image"; url: string; alt?: string }
   | {
@@ -30,7 +30,8 @@ export type PostContentItem =
       url: string;
       embedId?: string;
       title?: string;
-    };
+    }
+) & { id?: string };
 
 export interface PostSeo {
   metaTitle?: string;

@@ -143,6 +143,7 @@ The Create Post flow follows the structure of `Designs/createPost.html` and pres
 - content insertion menu with a green `+ Add Content` action
 
 The actual implementation continues to use the existing design direction while also supporting the newer ordered content and embed functionality.
+Each content card has a visible grip handle and touch-sized Move Up/Move Down buttons. Dragging highlights the active card and marks the insertion boundary without making the editor body itself draggable.
 
 ## Public article detail design
 
@@ -163,7 +164,7 @@ mobile navigation, and header. Its five focused slot panels show thumbnail,
 title, category, select/change/clear actions, and pending save feedback. The
 right-bottom panel explicitly communicates its ad-fallback role.
 
-`AdSlot` supports square sidebar and horizontal inline placements. The component renders only after explicit advertising enablement and a valid publisher ID; otherwise it returns no element, so recommendations and categories remain visible without ad gaps.
+`AdSlot` supports square sidebar and horizontal inline placements. The component renders only after explicit advertising enablement and a valid publisher ID; otherwise it returns no element, so recommendations and categories remain visible without ad gaps. Article inline content placement is independent of editor fields and is considered only after a substantial rich-text block at a suitable boundary.
 
 ## Public category and Latest archives
 

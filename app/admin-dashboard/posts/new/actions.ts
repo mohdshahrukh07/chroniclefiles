@@ -267,6 +267,15 @@ async function savePost(
     };
   }
 
+  const contentIds = content.flatMap((item) => item.id ? [item.id] : []);
+  if (new Set(contentIds).size !== contentIds.length) {
+    return {
+      success: false,
+      message: "Article content contains duplicate component identifiers. Reorder or re-add the affected field and try again.",
+      fieldErrors: { content: "Component identifiers must be unique." },
+    };
+  }
+
   const fieldErrors: Partial<Record<keyof CreatePostInput, string>> = {};
   const title = input.title.trim();
   const slug = input.slug.trim().toLowerCase();

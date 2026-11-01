@@ -167,3 +167,10 @@ This repository contains both current project documentation and implemented code
 ### Verification
 - TypeScript, ESLint, Problems, production build, and diff checks were run; results are recorded in `process.md`.
 - No database writes, Cloudinary uploads, or authenticated browser actions were performed.
+
+## 2026-11-01 — Flexible content ordering and ad placement
+
+- Added mouse/touch drag handles and keyboard Move Up/Move Down controls to every independent article content card. Reordering moves the existing item in the canonical array without changing rich-text JSON or media/embed attributes.
+- Added optional stable string IDs to ordered content entries; IDs survive normalization and saves, while old entries receive an editor ID when opened. No Post schema migration or new collection was introduced.
+- Removed the preview's arbitrary every-four-block ad stripe and stopped public ads after each individual content block. Public rendering now considers at most one inline AdSlot after substantial rich text at a suitable boundary; unavailable ads add no markup or spacing.
+- Browser smoke checks covered mixed-content reordering, preserved block values, keyboard movement, add/remove, preview ordering, and mobile-width overflow. Database save/reload/publish and enabled/configured ad visual checks remain staging verification.

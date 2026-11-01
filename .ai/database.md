@@ -99,6 +99,7 @@ Important compatibility notes:
 - the Post document still supports a legacy `videos` field in the schema
 - the modern architecture prefers a single ordered `content` array as the real source of truth
 - `content` is not forced to a rigid schema; it uses a mixed structure to preserve Tiptap JSON and custom content blocks
+- ordered content items may carry an optional stable string `id` for editor identity; MongoDB persists the existing array order and no schema or collection change is required
 
 ## Current content storage pattern
 
@@ -106,15 +107,15 @@ The code is designed around ordered content blocks. A representative structure i
 
 ```ts
 content: [
-  { type: "richText", content: { type: "doc", content: [...] } },
-  { type: "image", url: "https://..." },
-  { type: "embed", platform: "youtube", url: "https://...", embedId: "..." },
-  { type: "quote", text: "..." },
-  { type: "hr" }
+  { id: "rich-1", type: "richText", content: { type: "doc", content: [...] } },
+  { id: "image-1", type: "image", url: "https://..." },
+  { id: "embed-1", type: "embed", platform: "youtube", url: "https://...", embedId: "..." },
+  { id: "quote-1", type: "quote", text: "..." },
+  { id: "rule-1", type: "hr" }
 ]
 ```
 
-This structure is the canonical source of truth for ordering.
+This structure is the canonical source of truth for ordering. IDs are optional for legacy items; older posts remain readable and receive editor IDs when opened, which are persisted on the next save. Array movement preserves each complete item and its payload.
 
 The code also includes compatibility handling for older posts that may have had a separate `videos` array, but it does not treat that as the primary ordering format.
 

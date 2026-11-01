@@ -44,9 +44,14 @@ Add Content menu behavior:
 - each selection appends a content block at the current collection position in the main ordered list
 - block types include rich text, image, embed, H2/H3, bullet list, numbered list, quote, link, and horizontal rule
 - the list is preserved as an ordered array rather than separate video or embed arrays
+- each field has a stable optional ID; drag handles support mouse and touch, while Move Up/Move Down controls support keyboard operation
+- reordering moves the existing complete block in the array; the array is serialized in the same order for MongoDB, edit initialization, preview, and public rendering
+- rich-text contents retain their Tiptap JSON as a single block; headings, images, videos/embeds, tables, callouts, and other supported fields remain independent rather than being grouped
 
 Important rule from current implementation:
 - the widely used `content` array is the actual source of truth for ordering
+- ads are not content fields; public inline placement is selected independently by `getInlineAdAfterBlockIndex()` and rendered through `AdSlot` at most once after substantial rich text when followed by a suitable boundary
+- unavailable or unconfigured ads return no element and create no reserved gap
 
 Relevant files:
 - components/admin-posts/post-editor-form.tsx

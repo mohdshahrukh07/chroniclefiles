@@ -58,7 +58,10 @@ Relevant files:
 - models/post.ts
 
 Important details:
-- current content structure is ordered and block-based
+- content is a flexible ordered array; independent entries can be repeated and reordered across component types
+- drag handles support mouse/touch and Move Up/Move Down buttons provide a keyboard alternative
+- optional item IDs preserve identity; MongoDB persists the exact array sequence and no schema migration is required
+- public inline ad placement is separate from editorial content and may appear once after substantial rich text; unavailable ads leave no gap
 
 Known limitations:
 - legacy separate video data may not retain its original position among content blocks

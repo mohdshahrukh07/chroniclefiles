@@ -48,6 +48,12 @@ export function isTiptapDocument(value: unknown): value is TiptapDocument {
 
 export function isPostContentItem(value: unknown): value is PostContentItem {
   if (!isRecord(value) || typeof value.type !== "string") return false;
+  if (
+    value.id !== undefined &&
+    (typeof value.id !== "string" || !value.id.trim())
+  ) {
+    return false;
+  }
   if (value.type === "richText") return isTiptapDocument(value.content);
   if (value.type === "image") {
     return (
@@ -153,6 +159,45 @@ export function postContentHasData(content: readonly PostContentItem[]): boolean
   });
 }
 
+function getParagraphWordCount(node: JSONContent): number {
+  if (node.type === "paragraph" || node.type === "listItem") {
+    const text = collectText(node);
+    return text.match(/\S+/g)?.length ?? 0;
+  }
+  return node.content?.reduce(
+    (total, child) => total + getParagraphWordCount(child),
+    0,
+  ) ?? 0;
+}
+
+function collectText(node: JSONContent): string {
+  if (typeof node.text === "string") return node.text;
+  return node.content?.map(collectText).join(" ") ?? "";
+}
+
+export function getInlineAdAfterBlockIndex(
+  blocks: readonly PostContentItem[],
+  minimumWords = 350,
+): number | null {
+  for (let index = 0; index < blocks.length - 1; index += 1) {
+    const block = blocks[index];
+    const nextBlock = blocks[index + 1];
+    if (
+      block.type !== "richText" ||
+      !["richText", "heading2", "heading3", "hr"].includes(nextBlock.type)
+    ) {
+      continue;
+    }
+
+    if (
+      getParagraphWordCount(block.content as JSONContent) >= minimumWords
+    ) {
+      return index;
+    }
+  }
+  return null;
+}
+
 export function validatePostEmbeds(
   content: readonly PostContentItem[],
 ): string | null {
@@ -182,6 +227,7 @@ export function normalizePostEmbeds(
     const parsed = parsePostEmbed(item.platform, item.url);
     return parsed
       ? {
+          ...(item.id ? { id: item.id } : {}),
           type: "embed",
           ...parsed,
           ...(item.title ? { title: item.title } : {}),

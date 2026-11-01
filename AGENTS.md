@@ -226,6 +226,8 @@ Draft or unpublished content must not accidentally appear on public pages.
 
 Rich-text content is stored as the existing ordered Tiptap JSON. When changing supported marks or nodes, keep the editor, shared content validation, admin preview, and public renderer compatible, and preserve legacy JSON. Prefer official free extensions already compatible with the installed Tiptap version; do not use paid Pro features without an explicit requirement.
 
+Article components are independent entries in the existing ordered `Post.content` array. Preserve array order through create, edit, save, preview, and public rendering. Reordering must move complete entries without grouping by type; use stable optional component IDs for editor identity, not array indexes. Do not add ads as content entries. Public inline ads are presentation-only and should render only at suitable substantial-text boundaries through `AdSlot`.
+
 ---
 
 # 8. Public Website

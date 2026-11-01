@@ -39,8 +39,9 @@ The create/edit post flow is a single client component: `PostEditorForm`.
 
 Responsibilities:
 - field state for title, slug, excerpt, category, tags, status, SEO
-- ordered content block state
+- ordered content block state with stable optional component IDs
 - insertion and deletion of content blocks
+- pointer, touch, keyboard drag-and-drop, and explicit Move Up/Move Down reordering
 - rich text editing through Tiptap
 - embed field creation and validation
 - thumbnail upload state
@@ -69,7 +70,7 @@ The article detail page at `/post/[slug]` follows `Designs/Blogpage.html`. Its s
 
 Article metadata uses saved SEO title/description values with the actual post title/excerpt as fallbacks. Absolute canonical and JSON-LD URLs are derived only from the configured HTTPS `SITE_URL`, never the incoming request host. Article JSON-LD is omitted until both that origin and a valid publication date are available.
 
-Ad placement is presentation-only: `AdSlot` is reused for square sidebar and inline article positions, and inline slots follow the hero and each outer ordered content block. Slots return `null` unless `ADS_ENABLED=true` and a valid `ADSENSE_PUBLISHER_ID` are configured, so disabled ads do not consume layout space. There is no AdSense script or ad-unit identifier integration yet.
+Ad placement is presentation-only: `AdSlot` is reused for square sidebar and inline article positions. The article keeps its existing optional post-hero placement; the content renderer may select at most one additional inline position after a substantial rich-text block, and only before another rich-text block, a heading, or a horizontal rule. It skips short text, final blocks, and boundaries before images, embeds/videos, quotes, and lists. It never follows every block, and ads are not editor content. Slots return `null` unless `ADS_ENABLED=true` and a valid `ADSENSE_PUBLISHER_ID` are configured, so disabled or unconfigured ads do not consume layout space. There is no AdSense script or ad-unit identifier integration yet.
 
 The public archives share `CategoryListingPage` and the `PublicPostCardData` shape while retaining distinct server queries: `/blog` calls `getPublishedPostListing()` without a category ID, and `/category/[slug]` first resolves a real Category then filters by its ObjectId. Both use the existing published-status/future-date filter, a nine-post page size, and deterministic descending `publishedAt` then `_id` sort order. Missing publication dates remain eligible under the existing query rule, display no fabricated date, and sort after dated posts. Pagination links retain the `page` query for self-canonical URLs; the stable unique `_id` tiebreaker prevents nondeterministic ordering between equal dates. The Latest page is not represented in MongoDB and the sidebar/category chips only use real categories.
 
