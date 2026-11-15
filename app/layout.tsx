@@ -41,12 +41,22 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
+  const siteUrl = getPublicSiteUrl();
+
   return (
     <html
       lang="en"
       className={`${dmSans.variable} ${newsreader.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
+        {siteUrl ? (
+          <link
+            rel="alternate"
+            type="application/rss+xml"
+            title="ChronicleFiles RSS Feed"
+            href={new URL("/rss.xml", siteUrl).toString()}
+          />
+        ) : null}
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':

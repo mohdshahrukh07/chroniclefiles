@@ -1,5 +1,18 @@
 # Project Changelog
 
+## 2026-11-15 — Add dynamic RSS feed
+
+### What changed
+- Added `/rss.xml` as a request-time RSS 2.0 feed of up to 50 published, non-future posts, with escaped XML, canonical URLs, publication dates, categories, and verified image enclosures.
+- Added RSS discovery to the root HTML head using the trusted configured `SITE_URL`; left `robots.ts` and sitemap behavior unchanged.
+- Disabled response caching and added feed-path revalidation after post updates and deletions.
+- Documented the feature and the staging verification limitation.
+
+### Verification
+- TypeScript and focused ESLint checks passed; the existing Google Tag Manager lint warning remains.
+- XML fixture parsing, production build, full ESLint, and diff checks are recorded in `process.md`.
+- Live MongoDB publish/update/delete/unpublish checks were not run because no approved staging database was available.
+
 ## 2026-06-04 — Implement public homepage and Homepage Management
 
 ### What changed

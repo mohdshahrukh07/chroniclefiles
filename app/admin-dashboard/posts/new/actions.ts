@@ -207,6 +207,7 @@ export async function deletePostAction(
 
     revalidatePath("/admin-dashboard");
     revalidatePath("/admin-dashboard/posts");
+    revalidatePath("/rss.xml");
     revalidatePath("/sitemap.xml");
     return { success: true };
   } catch (error) {
@@ -465,6 +466,7 @@ async function savePost(
 
     revalidatePath("/admin-dashboard");
     revalidatePath("/admin-dashboard/posts");
+    revalidatePath("/rss.xml");
     revalidatePath("/sitemap.xml");
     if (postId) revalidatePath(`/admin-dashboard/posts/${postId}/edit`);
     return { success: true, postId: postIdToReturn };

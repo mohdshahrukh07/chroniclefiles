@@ -103,6 +103,27 @@ Relevant files:
 - app/admin-dashboard/posts/new/actions.ts
 - app/admin-dashboard/categories/actions.ts
 
+### RSS feed
+
+Current status: Implemented in code; database-backed lifecycle verification requires an approved staging target.
+
+What works:
+- `/rss.xml` reads up to 50 eligible published posts on each request; drafts, future-scheduled posts, and hard-deleted records are excluded
+- feed URLs use the configured HTTPS `SITE_URL`, and XML values are escaped
+- verified image media metadata is used for RSS enclosures; malformed or unavailable optional fields are omitted safely
+- the route sends `no-store` headers, and post save/delete actions revalidate it
+- the root HTML head advertises the feed when a valid `SITE_URL` is configured; RSS is not declared as a sitemap
+
+Known limitation:
+- publish/update/delete/unpublish visibility against real MongoDB documents was not exercised because the configured database is not confirmed staging
+
+Relevant files:
+- app/rss.xml/route.ts
+- lib/rss-feed.ts
+- app/layout.tsx
+- app/admin-dashboard/posts/new/actions.ts
+- lib/public-site-config.ts
+
 ### Create Post / Edit Post form
 
 Current status: Working with the current architecture.

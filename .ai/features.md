@@ -99,6 +99,8 @@ Current behavior:
 - paginated archive metadata uses the trusted configured site origin and preserves each page's canonical URL
 - `/post/[slug]` renders a published post using the `Designs/Blogpage.html` editorial article layout
 - `/` renders the public Home Page using `Designs/Homepage.html` and five saved featured slots
+- `/rss.xml` dynamically returns up to 50 published, non-future posts as RSS 2.0, with canonical article URLs, dates, categories, and verified image enclosures
+- the root layout advertises the RSS feed using the configured production `SITE_URL`; the feed is not listed as a sitemap
 - scheduled/future posts are excluded
 - `app/sitemap.ts` dynamically emits the homepage, valid category URLs, and eligible published article URLs using the trusted `SITE_URL`; its data is revalidated after post/category mutations
 - `app/robots.ts` preserves open public crawling, excludes admin/API paths, and references the sitemap only when a valid configured site origin exists
@@ -111,6 +113,8 @@ Current behavior:
 
 Relevant files:
 - app/page.tsx
+- app/rss.xml/route.ts
+- lib/rss-feed.ts
 - app/blog/page.tsx
 - app/category/[slug]/page.tsx
 - app/post/[slug]/page.tsx

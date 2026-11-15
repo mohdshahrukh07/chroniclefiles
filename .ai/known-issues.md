@@ -76,6 +76,26 @@ Planned Fix:
 Important Notes:
 - this is a local setup requirement rather than a code rewrite issue
 
+## Issue: RSS database lifecycle needs staging verification
+
+Status: Needs verification
+
+Symptoms:
+- the dynamic `/rss.xml` handler and post mutation revalidation are implemented, but publish/update/delete/unpublish changes have not been tested against live post records
+
+Root Cause:
+- the configured MongoDB target has not been identified as safe staging, and no disposable staging target was provided
+
+Affected Files:
+- `app/rss.xml/route.ts`
+- `app/admin-dashboard/posts/new/actions.ts`
+
+Current Workaround:
+- rely on request-time database reads, uncached response headers, and source/build validation; do not mutate the unclassified database
+
+Planned Verification:
+- use an approved staging database to validate published, draft, future, updated, deleted, and unpublished posts through `/rss.xml`
+
 ## Issue: Analytics staging verification is blocked
 
 Status: Needs verification
